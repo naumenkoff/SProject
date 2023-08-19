@@ -15,7 +15,7 @@ public static class FileSystemInfoExtensions
     ///     or
     ///     null if not found or <paramref name="throwException" /> is false.
     /// </returns>
-    public static FileInfo? GetFileInfo(bool throwException, params string[] paths)
+    public static FileInfo? GetFileInfo(bool throwException, params string?[] paths)
     {
         var fileSystemInfo = Create<FileInfo>(throwException, paths);
         return fileSystemInfo.Exists() ? (FileInfo) fileSystemInfo! : default;
@@ -31,7 +31,7 @@ public static class FileSystemInfoExtensions
     ///     or
     ///     null if not found or <paramref name="throwException" /> is false.
     /// </returns>
-    public static DirectoryInfo? GetDirectoryInfo(bool throwException, params string[] paths)
+    public static DirectoryInfo? GetDirectoryInfo(bool throwException, params string?[] paths)
     {
         var fileSystemInfo = Create<DirectoryInfo>(throwException, paths);
         return fileSystemInfo.Exists() ? (DirectoryInfo) fileSystemInfo! : default;
@@ -49,13 +49,13 @@ public static class FileSystemInfoExtensions
     ///     null if not found or <paramref name="throwException" /> is false.
     /// </returns>
     /// <exception cref="ArgumentException">Thrown if an unsupported <typeparamref name="T" /> is provided.</exception>
-    private static FileSystemInfo? Create<T>(bool throwException, params string[] paths) where T : FileSystemInfo
+    private static FileSystemInfo? Create<T>(bool throwException, params string?[] paths) where T : FileSystemInfo
     {
         string path;
         try
         {
             // Path.Combine checks for null in the whole collection and each element.
-            path = Path.Combine(paths);
+            path = Path.Combine(paths!);
         }
         catch (Exception)
         {
