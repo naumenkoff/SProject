@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace SProject;
+namespace SProject.Math;
 
 public static class Vector2Extensions
 {

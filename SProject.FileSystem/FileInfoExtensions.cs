@@ -1,4 +1,4 @@
-﻿namespace SProject;
+﻿namespace SProject.FileSystem;
 
 /// <summary>
 ///     Provides extension methods for working with <see cref="System.IO.FileInfo" /> instances.

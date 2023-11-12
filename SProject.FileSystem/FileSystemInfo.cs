@@ -1,4 +1,4 @@
-﻿namespace SProject;
+﻿namespace SProject.FileSystem;
 
 /// <summary>
 ///     Provides utility methods for creating instances of <see cref="System.IO.FileSystemInfo" /> types.

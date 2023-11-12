@@ -1,6 +1,6 @@
-﻿namespace SProject;
+﻿namespace SProject.Math;
 
-public class ByteUnitConverter
+public static class ByteUnitConverter
 {
     public static long MegabytesToBytes(double megabytes)
     {
