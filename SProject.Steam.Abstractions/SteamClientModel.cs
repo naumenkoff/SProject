@@ -30,9 +30,13 @@ public class SteamClientModel
         return FileSystemInfoExtensions.GetDirectoryInfo(throwExceptionIfNotFound, WorkingDirectory.FullName, "steamapps");
     }
 
+    private List<SteamClientModel> _steamClientModels = new List<SteamClientModel>();
+    
     public IEnumerable<SteamClientModel> GetAnotherInstallations(ISteamClientTemplateProvider? steamClientTemplateProvider = default,
-        bool throwExceptionIfNotFound = false)
+        bool throwExceptionIfNotFound = false, bool force = false)
     {
+        if (!force && _steamClientModels.Count != 0) return _steamClientModels;
+
         var steamapps = GetSteamappsDirectory(throwExceptionIfNotFound);
         if (steamapps is null) return Enumerable.Empty<SteamClientModel>();
 
@@ -60,6 +64,7 @@ public class SteamClientModel
         }
 
         if (throwExceptionIfNotFound && clients.Count == 0) throw new NotImplementedException();
+        _steamClientModels = clients;
 
         return clients;
     }
