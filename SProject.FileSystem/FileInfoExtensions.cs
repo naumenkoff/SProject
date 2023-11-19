@@ -23,8 +23,7 @@ public static class FileInfoExtensions
         try
         {
             using var streamReader = fileInfo!.OpenText();
-            var content = streamReader.ReadToEnd();
-            return content;
+            return streamReader.ReadToEnd();
         }
         catch (Exception)
         {
