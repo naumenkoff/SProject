@@ -14,15 +14,11 @@ public class RootObject : IValueObject
     {
         dictionary ??= new Dictionary<string, List<IValueObject>>();
 
-        if (string.IsNullOrEmpty(rootObject.Key)) throw new NullReferenceException(nameof(rootObject.Key));
-        dictionary.TryAdd(rootObject.Key!, rootObject.ValueObjects);
-    
+        if (!string.IsNullOrEmpty(rootObject.Key)) dictionary.TryAdd(rootObject.Key!, rootObject.ValueObjects);
+
         foreach (var valueObject in rootObject.ValueObjects)
         {
-            if (valueObject is RootObject rootObj)
-            {
-                BuildMap(rootObj, dictionary);
-            }
+            if (valueObject is RootObject rootObj) BuildMap(rootObj, dictionary);
         }
 
         return dictionary;
