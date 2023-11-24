@@ -2,23 +2,24 @@ namespace SProject.VDF;
 
 public class RootObject : IValueObject
 {
-    public List<IValueObject> ValueObjects { get; set; } = new List<IValueObject>();
+    public Dictionary<string, IValueObject> ValueObjects { get; set; } = new Dictionary<string, IValueObject>();
     public string? Key { get; set; }
 
-    public Dictionary<string, List<IValueObject>> BuildMap()
+    public Dictionary<string, Dictionary<string, IValueObject>> BuildMap()
     {
         return BuildMap(this, null);
     }
 
-    private static Dictionary<string, List<IValueObject>> BuildMap(RootObject rootObject, Dictionary<string, List<IValueObject>>? dictionary)
+    private static Dictionary<string, Dictionary<string, IValueObject>> BuildMap(RootObject rootObject,
+        Dictionary<string, Dictionary<string, IValueObject>>? dictionary)
     {
-        dictionary ??= new Dictionary<string, List<IValueObject>>();
+        dictionary ??= new Dictionary<string, Dictionary<string, IValueObject>>();
 
         if (!string.IsNullOrEmpty(rootObject.Key)) dictionary.TryAdd(rootObject.Key!, rootObject.ValueObjects);
 
         foreach (var valueObject in rootObject.ValueObjects)
         {
-            if (valueObject is RootObject rootObj) BuildMap(rootObj, dictionary);
+            if (valueObject.Value is RootObject rootObj) BuildMap(rootObj, dictionary);
         }
 
         return dictionary;

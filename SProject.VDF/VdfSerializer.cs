@@ -63,7 +63,11 @@ public class VdfSerializer
                 stream.ReadLine();
 
                 var list = Parse(stream, ExtractKeyValue(line).key);
-                root.ValueObjects.Add(list);
+                root.ValueObjects.Add(list.Key!, new RootObject
+                {
+                    Key = list.Key,
+                    ValueObjects = list.ValueObjects
+                });
 
                 continue;
             }
@@ -73,7 +77,7 @@ public class VdfSerializer
             var (valueKey, value) = ExtractKeyValue(line);
             if (valueKey is null || value is null) continue;
 
-            root.ValueObjects.Add(new ValueObject(valueKey, value));
+            root.ValueObjects.Add(valueKey, new ValueObject(valueKey, value));
         }
 
         return root;
