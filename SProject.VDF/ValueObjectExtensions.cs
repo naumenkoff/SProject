@@ -12,18 +12,32 @@ public static class ValueObjectExtensions
         return valueObject as ValueObject;
     }
 
-    public static long AsLong(this IValueObject valueObject)
+    public static T GetValue<T>(this IValueObject abstraction, string key) where T : struct
     {
-        return valueObject is not ValueObject value ? -1 : long.Parse(value.Value);
-    }
-    
-    public static long AsInt(this IValueObject valueObject)
-    {
-        return valueObject is not ValueObject value ? -1 : int.Parse(value.Value);
+        switch (abstraction)
+        {
+            case ValueObject valueObject:
+            {
+                return valueObject.Key == key ? Cast<T>(valueObject.Value) : throw new KeyNotFoundException($"{key} != {valueObject.Key}");
+            }
+            case RootObject rootObject:
+            {
+                var value = rootObject[key].AsValueObject()?.Value;
+                return Cast<T>(value);
+            }
+            default: { throw new NotSupportedException($"{abstraction.GetType()} doesn't support getting value"); }
+        }
     }
 
-    public static bool AsBool(this IValueObject valueObject)
+    private static T Cast<T>(string? content) where T : struct
     {
-        return valueObject is ValueObject { Value: "1" };
+        ArgumentException.ThrowIfNullOrEmpty(content);
+        return typeof(T) switch
+        {
+            { } type when type == typeof(int) => (T) (object) Convert.ToInt32(content),
+            { } type when type == typeof(long) => (T) (object) Convert.ToInt64(content),
+            { } type when type == typeof(bool) => (T) (object) (content == "1"),
+            _ => throw new InvalidCastException($"Casting to {typeof(T)} isn't supported.")
+        };
     }
 }
