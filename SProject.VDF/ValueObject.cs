@@ -11,4 +11,6 @@ public class ValueObject : IValueObject
     public string Value { get; set; }
 
     public string? Key { get; set; }
+
+    public IValueObject this[string key] => this;
 }

@@ -5,6 +5,8 @@ public class RootObject : IValueObject
     public Dictionary<string, IValueObject> ValueObjects { get; set; } = new Dictionary<string, IValueObject>();
     public string? Key { get; set; }
 
+    public IValueObject this[string key] => ValueObjects[key];
+
     public Dictionary<string, Dictionary<string, IValueObject>> BuildMap()
     {
         return BuildMap(this, null);
