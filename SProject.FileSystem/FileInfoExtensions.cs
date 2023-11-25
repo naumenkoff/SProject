@@ -14,7 +14,7 @@ public static class FileInfoExtensions
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="fileInfo" /> is null or does not exist.</exception>
     public static string? ReadAllText(this FileInfo? fileInfo, bool throwException = false)
     {
-        if (!fileInfo.Exists())
+        if (fileInfo is null || !fileInfo.Exists)
         {
             if (throwException) throw new ArgumentNullException(nameof(fileInfo), "The parameter was null or did not exist in the file system.");
             return null;
@@ -22,7 +22,7 @@ public static class FileInfoExtensions
 
         try
         {
-            using var streamReader = fileInfo!.OpenText();
+            using var streamReader = fileInfo.OpenText();
             return streamReader.ReadToEnd();
         }
         catch (Exception)
