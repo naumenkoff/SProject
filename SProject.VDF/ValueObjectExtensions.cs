@@ -17,9 +17,14 @@ public static class ValueObjectExtensions
             {
                 return valueObject.Key == key ? Cast<T>(valueObject.Value) : throw new KeyNotFoundException($"{key} != {valueObject.Key}");
             }
-            case UndirectRootObject rootObject:
+            case UndirectRootObject undirectRootObject:
             {
-                var value = rootObject[key].As<ValueObject>().Value;
+                var value = undirectRootObject[key].As<ValueObject>().Value;
+                return Cast<T>(value);
+            }
+            case DirectRootObject directRootObject:
+            {
+                var value = directRootObject.Get(key).As<ValueObject>().Value;
                 return Cast<T>(value);
             }
             default: { throw new NotSupportedException($"{abstraction.GetType()} doesn't support getting value"); }
