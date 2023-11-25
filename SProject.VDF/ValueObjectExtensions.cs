@@ -43,23 +43,20 @@ public static class ValueObjectExtensions
         };
     }
 
-    public static Dictionary<string, Dictionary<string, IValueObject>> BuildMap(this IRootObject rootObject)
+    public static IEnumerable<IRootObject> GetSection(this IRootObject rootObject, string key)
     {
-        return BuildMap(rootObject, null);
-    }
+        var list = new List<IRootObject>();
 
-    private static Dictionary<string, Dictionary<string, IValueObject>> BuildMap(IRootObject rootObject,
-        Dictionary<string, Dictionary<string, IValueObject>>? dictionary)
-    {
-        dictionary ??= new Dictionary<string, Dictionary<string, IValueObject>>();
-
-        if (!string.IsNullOrEmpty(rootObject.Key)) dictionary.TryAdd(rootObject.Key!, rootObject.ValueObjects);
-
-        foreach (var valueObject in rootObject.ValueObjects)
+        foreach (var val in rootObject.RootObjects)
         {
-            if (valueObject.Value is IRootObject rootObj) BuildMap(rootObj, dictionary);
+            if (val.Key == key) list.Add(val.Value);
+
+            var searchNext = val.Value.GetSection(key);
+            list.AddRange(searchNext);
         }
 
-        return dictionary;
+        if (rootObject.ValueObjects.Any(val => val.Key == key)) list.Add(rootObject);
+
+        return list;
     }
 }

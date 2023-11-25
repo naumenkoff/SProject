@@ -45,17 +45,14 @@ public static class VdfSerializer
         }
     }*/
 
-    public static IRootObject Parse(StreamReader streamReader)
+    public static T Parse<T>(StreamReader streamReader) where T : IRootObject
     {
-        return Parse(streamReader, string.Empty);
+        return Parse<T>(streamReader, string.Empty);
     }
 
-    private static IRootObject Parse(StreamReader stream, string? key)
+    private static T Parse<T>(StreamReader stream, string? key) where T : IRootObject
     {
-        var root = new DirectRootObject
-        {
-            Key = key?.ToLower()
-        };
+        var root = (T) Activator.CreateInstance(typeof(T), key)!;
         while (!stream.EndOfStream)
         {
             var line = stream.ReadLine()!;
@@ -64,7 +61,7 @@ public static class VdfSerializer
             {
                 stream.ReadLine();
 
-                var list = Parse(stream, ExtractKeyValue(line).key);
+                var list = Parse<T>(stream, ExtractKeyValue(line).key);
                 root.RootObjects.Add(list.Key!, list);
 
                 continue;

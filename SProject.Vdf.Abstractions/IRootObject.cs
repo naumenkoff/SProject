@@ -6,8 +6,8 @@ public interface IRootObject<out TDirect, out TIndirect> : IRootObject where TDi
     TIndirect Get(string key);
 }
 
-public interface IRootObject : IValueObject {
+public interface IRootObject : IValueObject
+{
     Dictionary<string, IValueObject> ValueObjects { get; }
     Dictionary<string, IRootObject> RootObjects { get; }
-    IValueObject this[string key] { get; }
 }
