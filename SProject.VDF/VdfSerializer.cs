@@ -4,55 +4,14 @@ namespace SProject.VDF;
 
 public static class VdfSerializer
 {
-    /*T ParseVdf<T>(StreamReader stream)
+    public static IRootObject Parse(StreamReader streamReader)
     {
-        T instance = Activator.CreateInstance<T>();
-        if (instance is null) throw new NotImplementedException();
-
-        var parsingResult = Parse(stream, string.Empty);
-        var fields = instance.GetType().GetProperties().ToDictionary(x => x.Name.ToLower(), y => y);
-
-        SetValues<T>(parsingResult, fields, instance);
-
-        return instance;
-    }*/
-
-    /*void SetValues<T>(VdfObjectRoot vdfObjectRoot, Dictionary<string, PropertyInfo> dictionary, T instance)
-    {
-        foreach (var vdfObject in vdfObjectRoot.VObjects)
-        {
-            if (vdfObject is VdfObject valueObject)
-            {
-                if (dictionary.TryGetValue(valueObject.Key, out var property))
-                {
-                    if (property.PropertyType == typeof(bool)) { property.SetValue(instance, valueObject.Value is "1", null); }
-                    else
-                        property.SetValue(instance, Convert.ChangeType(valueObject.Value, property.PropertyType), null);
-                }
-            }
-            else if (vdfObject is VdfObjectRoot rootObject)
-            {
-                if (string.IsNullOrEmpty(rootObject.Key))
-                    SetValues(rootObject, dictionary, instance);
-                else
-                {
-                    if (dictionary.TryGetValue(rootObject.Key, out var property))
-                    {
-                        if (pro)
-                    }
-                }
-            }
-        }
-    }*/
-
-    public static T Parse<T>(StreamReader streamReader) where T : IRootObject
-    {
-        return Parse<T>(streamReader, string.Empty);
+        return Parse(streamReader, string.Empty);
     }
 
-    private static T Parse<T>(StreamReader stream, string? key) where T : IRootObject
+    private static IRootObject Parse(StreamReader stream, string key)
     {
-        var root = (T) Activator.CreateInstance(typeof(T), key)!;
+        var root = new RootObject(key);
         while (!stream.EndOfStream)
         {
             var line = stream.ReadLine()!;
@@ -61,7 +20,7 @@ public static class VdfSerializer
             {
                 stream.ReadLine();
 
-                var list = Parse<T>(stream, ExtractKeyValue(line).key);
+                var list = Parse(stream, ExtractKeyValue(line).key);
                 root.RootObjects.Add(list.Key!, list);
 
                 continue;

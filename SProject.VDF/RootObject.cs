@@ -2,19 +2,24 @@ using SProject.Vdf.Abstractions;
 
 namespace SProject.VDF;
 
-public class DirectRootObject : IRootObject<IRootObject, IValueObject>
+public class RootObject : IRootObject
 {
-    public DirectRootObject(string? key)
+    public RootObject(string key)
     {
         Key = key;
     }
 
-    public string? Key { get; }
-
-    public IValueObject Get(string key)
+    public T GetValueObject<T>(string key) where T : IValueObject
     {
-        return ValueObjects[key];
+        return ValueObjects[key].As<T>();
     }
+
+    public T GetRootObject<T>(string key) where T : IRootObject
+    {
+        return RootObjects[key].As<T>();
+    }
+
+    public string Key { get; }
 
     #region Collection
 
@@ -25,8 +30,8 @@ public class DirectRootObject : IRootObject<IRootObject, IValueObject>
 
     #region Index
 
-    IValueObject IValueObject.this[string key] => this[key];
     public IRootObject this[string key] => RootObjects[key];
+    IValueObject IValueObject.this[string key] => ValueObjects[key];
 
     #endregion
 }

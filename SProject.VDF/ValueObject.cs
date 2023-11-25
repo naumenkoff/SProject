@@ -13,4 +13,10 @@ public class ValueObject : IValueObject
     public string Value { get; }
     public string Key { get; }
     public IValueObject this[string key] => this;
+
+    public T GetValueObject<T>(string key) where T : IValueObject
+    {
+        if (key == Key) return this.As<T>();
+        throw new KeyNotFoundException($"{key} != {Key}");
+    }
 }
