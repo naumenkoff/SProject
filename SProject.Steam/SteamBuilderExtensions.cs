@@ -10,7 +10,6 @@ public static class SteamClientServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         services.AddTransient<ISteamClientFinder, SteamClientFinder>();
-        services.AddSingleton<ISteamClientTemplateProvider, SteamClientTemplateProvider>();
 
         services.AddOptions<SteamOptions>();
         return services;

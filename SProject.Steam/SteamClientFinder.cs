@@ -8,13 +8,11 @@ namespace SProject.Steam;
 
 public sealed class SteamClientFinder : ISteamClientFinder
 {
-    private readonly ISteamClientTemplateProvider _steamClientTemplateProvider;
     private readonly SteamOptions _steamOptions;
 
-    public SteamClientFinder(IOptions<SteamOptions> steamOptions, ISteamClientTemplateProvider steamClientTemplateProvider)
+    public SteamClientFinder(IOptions<SteamOptions> steamOptions)
     {
         _steamOptions = steamOptions.Value;
-        _steamClientTemplateProvider = steamClientTemplateProvider;
     }
 
     public SteamClientModel? FindSteamClient()
@@ -28,7 +26,7 @@ public sealed class SteamClientFinder : ISteamClientFinder
             var directoryInfo = FileSystemInfoExtensions.GetDirectoryInfo(false, installPath);
             if (directoryInfo is not null)
             {
-                return new SteamClientModel(_steamClientTemplateProvider)
+                return new SteamClientModel
                 {
                     WorkingDirectory = directoryInfo,
                     IsRootDirectory = true

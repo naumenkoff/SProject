@@ -8,6 +8,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\SProject.FileSystem\SProject.FileSystem.csproj"/>
+        <ProjectReference Include="..\SProject.VDF\SProject.VDF.csproj"/>
     </ItemGroup>
 
 </Project>

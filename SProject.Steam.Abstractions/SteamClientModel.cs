@@ -1,17 +1,11 @@
-﻿using System.Text.RegularExpressions;
-using SProject.FileSystem;
+﻿using SProject.FileSystem;
+using SProject.VDF;
 
 namespace SProject.Steam.Abstractions;
 
 public class SteamClientModel
 {
-    private readonly ISteamClientTemplateProvider _templateProvider;
-
-    public SteamClientModel(ISteamClientTemplateProvider templateProvider)
-    {
-        _templateProvider = templateProvider;
-    }
-
+    private List<SteamClientModel> _steamClientModels = new List<SteamClientModel>();
     public required bool IsRootDirectory { get; init; }
     public required DirectoryInfo WorkingDirectory { get; init; }
 
@@ -30,10 +24,7 @@ public class SteamClientModel
         return FileSystemInfoExtensions.GetDirectoryInfo(throwExceptionIfNotFound, WorkingDirectory.FullName, "steamapps");
     }
 
-    private List<SteamClientModel> _steamClientModels = new List<SteamClientModel>();
-    
-    public IEnumerable<SteamClientModel> GetAnotherInstallations(ISteamClientTemplateProvider? steamClientTemplateProvider = default,
-        bool throwExceptionIfNotFound = false, bool force = false)
+    public IEnumerable<SteamClientModel> GetAnotherInstallations(bool throwExceptionIfNotFound = false, bool force = false)
     {
         if (!force && _steamClientModels.Count != 0) return _steamClientModels;
 
@@ -43,18 +34,17 @@ public class SteamClientModel
         var libraryfolders = FileSystemInfoExtensions.GetFileInfo(throwExceptionIfNotFound, steamapps.FullName, "libraryfolders.vdf");
         if (libraryfolders is null) return Enumerable.Empty<SteamClientModel>();
 
-        var fileContent = libraryfolders.ReadAllText(throwExceptionIfNotFound);
-        if (string.IsNullOrEmpty(fileContent)) return Enumerable.Empty<SteamClientModel>();
+        var rootObject = VdfSerializer.Parse(libraryfolders)["libraryfolders"];
+        if (rootObject is null || rootObject.RootObjects.Count == 0) return Enumerable.Empty<SteamClientModel>();
 
         var clients = new List<SteamClientModel>();
 
-        var (selector, template) = _templateProvider.GetTemplate(SteamClientTemplateType.Instance);
-        foreach (Match match in template.Matches(fileContent))
+        foreach (var path in rootObject.RootObjects.Select(x => x.Value).Select(x => x.GetValue<string>("path")))
         {
-            var directoryInfo = FileSystemInfoExtensions.GetDirectoryInfo(false, selector(match));
+            var directoryInfo = FileSystemInfoExtensions.GetDirectoryInfo(false, path);
             if (directoryInfo is null) continue;
 
-            var steamClientModel = new SteamClientModel(steamClientTemplateProvider ?? _templateProvider)
+            var steamClientModel = new SteamClientModel
             {
                 WorkingDirectory = directoryInfo,
                 IsRootDirectory = false
