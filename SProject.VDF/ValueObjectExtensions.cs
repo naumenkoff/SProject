@@ -20,7 +20,7 @@ public static class ValueObjectExtensions
             case IRootObject rootObject:
             {
                 var value = rootObject.GetValueObject<ValueObject>(key);
-                return Cast<T>(value.Value);
+                return Cast<T>(value?.Value);
             }
             default: { throw new NotSupportedException($"{abstraction.GetType()} doesn't support getting value"); }
         }
@@ -37,22 +37,5 @@ public static class ValueObjectExtensions
             { } type when type == typeof(string) => (T) (object) content,
             _ => throw new InvalidCastException($"Casting to {typeof(T)} isn't supported.")
         };
-    }
-
-    public static IEnumerable<IRootObject> GetSection(this IRootObject rootObject, string key)
-    {
-        var list = new List<IRootObject>();
-
-        foreach (var val in rootObject.RootObjects)
-        {
-            if (val.Key == key) list.Add(val.Value);
-
-            var searchNext = val.Value.GetSection(key);
-            list.AddRange(searchNext);
-        }
-
-        if (rootObject.ValueObjects.Any(val => val.Key == key)) list.Add(rootObject);
-
-        return list;
     }
 }

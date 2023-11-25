@@ -1,3 +1,4 @@
+using System.Text;
 using SProject.Vdf.Abstractions;
 
 namespace SProject.VDF;
@@ -7,6 +8,18 @@ public static class VdfSerializer
     public static IRootObject Parse(StreamReader streamReader)
     {
         return Parse(streamReader, string.Empty);
+    }
+
+    public static IRootObject Parse(FileInfo fileInfo)
+    {
+        using var stream = fileInfo.OpenText();
+        return Parse(stream);
+    }
+
+    public static IRootObject Parse(string path, Encoding? encoding = null)
+    {
+        using var stream = new StreamReader(path, encoding ?? Encoding.UTF8);
+        return Parse(stream);
     }
 
     private static IRootObject Parse(StreamReader stream, string key)
