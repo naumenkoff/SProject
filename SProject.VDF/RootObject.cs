@@ -9,14 +9,14 @@ public class RootObject : IRootObject
         Key = key;
     }
 
-    public T GetValueObject<T>(string key) where T : IValueObject
+    public T? GetValueObject<T>(string key) where T : IValueObject
     {
-        return ValueObjects[key].As<T>();
+        return ValueObjects.GetValueOrDefault(key).As<T>();
     }
 
-    public T GetRootObject<T>(string key) where T : IRootObject
+    public T? GetRootObject<T>(string key) where T : IRootObject
     {
-        return RootObjects[key].As<T>();
+        return RootObjects.GetValueOrDefault(key).As<T>();
     }
 
     public string Key { get; }
@@ -30,8 +30,8 @@ public class RootObject : IRootObject
 
     #region Index
 
-    public IRootObject this[string key] => RootObjects[key];
-    IValueObject IValueObject.this[string key] => ValueObjects[key];
+    public IRootObject? this[string key] => RootObjects.GetValueOrDefault(key);
+    IValueObject? IValueObject.this[string key] => ValueObjects.GetValueOrDefault(key);
 
     #endregion
 }

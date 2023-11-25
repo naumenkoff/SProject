@@ -4,12 +4,12 @@ namespace SProject.VDF;
 
 public static class ValueObjectExtensions
 {
-    public static T As<T>(this IValueObject valueObject) where T : IValueObject
+    public static T? As<T>(this IValueObject? valueObject) where T : IValueObject
     {
-        return (T) valueObject;
+        return valueObject is null ? default : (T) valueObject;
     }
 
-    public static T GetValue<T>(this IValueObject abstraction, string key) where T : struct
+    public static T GetValue<T>(this IValueObject abstraction, string key)
     {
         switch (abstraction)
         {
@@ -26,7 +26,7 @@ public static class ValueObjectExtensions
         }
     }
 
-    private static T Cast<T>(string? content) where T : struct
+    private static T Cast<T>(string? content)
     {
         ArgumentException.ThrowIfNullOrEmpty(content);
         return typeof(T) switch
@@ -34,6 +34,7 @@ public static class ValueObjectExtensions
             { } type when type == typeof(int) => (T) (object) Convert.ToInt32(content),
             { } type when type == typeof(long) => (T) (object) Convert.ToInt64(content),
             { } type when type == typeof(bool) => (T) (object) (content == "1"),
+            { } type when type == typeof(string) => (T) (object) content,
             _ => throw new InvalidCastException($"Casting to {typeof(T)} isn't supported.")
         };
     }

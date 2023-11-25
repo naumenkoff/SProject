@@ -12,11 +12,10 @@ public class ValueObject : IValueObject
 
     public string Value { get; }
     public string Key { get; }
-    public IValueObject this[string key] => this;
+    public IValueObject? this[string key] => key == Key ? this : default;
 
-    public T GetValueObject<T>(string key) where T : IValueObject
+    public T? GetValueObject<T>(string key) where T : IValueObject
     {
-        if (key == Key) return this.As<T>();
-        throw new KeyNotFoundException($"{key} != {Key}");
+        return key == Key ? this.As<T>() : default;
     }
 }
