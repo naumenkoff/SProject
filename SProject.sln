@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SProject.Steam.Abstractions
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SProject.VDF", "SProject.VDF\SProject.VDF.csproj", "{DB496F49-C04B-457F-9FC0-DABA7AD8A452}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SProject.Vdf.Abstractions", "SProject.Vdf.Abstractions\SProject.Vdf.Abstractions.csproj", "{68C05EAC-C5B8-4403-8716-83A712485DC6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{DB496F49-C04B-457F-9FC0-DABA7AD8A452}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DB496F49-C04B-457F-9FC0-DABA7AD8A452}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DB496F49-C04B-457F-9FC0-DABA7AD8A452}.Release|Any CPU.Build.0 = Release|Any CPU
+		{68C05EAC-C5B8-4403-8716-83A712485DC6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68C05EAC-C5B8-4403-8716-83A712485DC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68C05EAC-C5B8-4403-8716-83A712485DC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68C05EAC-C5B8-4403-8716-83A712485DC6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

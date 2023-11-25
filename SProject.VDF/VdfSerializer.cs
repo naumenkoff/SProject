@@ -1,6 +1,8 @@
+using SProject.Vdf.Abstractions;
+
 namespace SProject.VDF;
 
-public class VdfSerializer
+public static class VdfSerializer
 {
     /*T ParseVdf<T>(StreamReader stream)
     {
@@ -43,14 +45,14 @@ public class VdfSerializer
         }
     }*/
 
-    public static RootObject Parse(StreamReader streamReader)
+    public static IRootObject Parse(StreamReader streamReader)
     {
         return Parse(streamReader, string.Empty);
     }
 
-    private static RootObject Parse(StreamReader stream, string? key)
+    private static IRootObject Parse(StreamReader stream, string? key)
     {
-        var root = new RootObject
+        var root = new DirectRootObject
         {
             Key = key?.ToLower()
         };
@@ -63,11 +65,7 @@ public class VdfSerializer
                 stream.ReadLine();
 
                 var list = Parse(stream, ExtractKeyValue(line).key);
-                root.ValueObjects.Add(list.Key!, new RootObject
-                {
-                    Key = list.Key,
-                    ValueObjects = list.ValueObjects
-                });
+                root.RootObjects.Add(list.Key!, list);
 
                 continue;
             }
