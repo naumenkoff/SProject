@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SProject.Vdf.Abstractions",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SProject.FileSystem.Tests", "SProject.FileSystem.Tests\SProject.FileSystem.Tests.csproj", "{13F4FD85-5E5C-4D5F-B46D-168894399294}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SProject.Math.Tests", "SProject.Math.Tests\SProject.Math.Tests.csproj", "{52ECA118-8DAE-4A33-A249-DCB5C426A5B9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,5 +50,9 @@ Global
 		{13F4FD85-5E5C-4D5F-B46D-168894399294}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{13F4FD85-5E5C-4D5F-B46D-168894399294}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{13F4FD85-5E5C-4D5F-B46D-168894399294}.Release|Any CPU.Build.0 = Release|Any CPU
+		{52ECA118-8DAE-4A33-A249-DCB5C426A5B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{52ECA118-8DAE-4A33-A249-DCB5C426A5B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{52ECA118-8DAE-4A33-A249-DCB5C426A5B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{52ECA118-8DAE-4A33-A249-DCB5C426A5B9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
