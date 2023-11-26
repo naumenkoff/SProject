@@ -1,5 +1,4 @@
 using System.IO.Enumeration;
-using System.Security.AccessControl;
 using TimeSpan = System.TimeSpan;
 
 namespace SProject.FileSystem.Tests;
@@ -7,91 +6,99 @@ namespace SProject.FileSystem.Tests;
 [TestFixture]
 public class DirectoryInfoExtensionsTest
 {
-    private DirectoryInfo TestDirectory { get; set; }
-    private DirectoryInfo SubTestDirectory { get; set; }
-    private FileInfo TestFileMain { get; set; }
-    private FileInfo TestFileSecond { get; set; }
-
-    private FileInfo CreateFile(string tempDirectory)
-    {
-        var tempFile = Path.Combine(tempDirectory, Path.GetRandomFileName());
-        var file = new FileInfo(tempFile);
-        using var _ = file.Create();
-        return file;
-    }
-
     [OneTimeSetUp]
     public void Init()
     {
-        var tempDirectory = Path.Combine(Path.GetTempPath(), nameof(DirectoryInfoExtensionsTest));
-        TestDirectory = new DirectoryInfo(tempDirectory);
-        TestDirectory.Create();
-        SubTestDirectory = TestDirectory.CreateSubdirectory(DateTime.UtcNow.Ticks.ToString());
-        TestFileMain = CreateFile(tempDirectory);
-        TestFileSecond = CreateFile(tempDirectory);
+        _testDirectory = TestHelper.CreateDirectory();
+        _subTestDirectory = _testDirectory.CreateSubdirectory(DateTime.UtcNow.Ticks.ToString());
+        _testFileMain = TestHelper.CreateFile(_testDirectory);
+        _testFileSecond = TestHelper.CreateFile(_testDirectory);
     }
 
     [OneTimeTearDown]
     public void Cleanup()
     {
-        TestDirectory.Delete(true);
+        _testDirectory.Delete(true);
     }
 
+    private DirectoryInfo _testDirectory = null!;
+    private DirectoryInfo _subTestDirectory = null!;
+    private FileInfo _testFileMain = null!;
+    private FileInfo _testFileSecond = null!;
+
     [Test]
-    public void GetAllFiles()
+    public void GetAllFiles_ShouldReturnFileInfoArray()
     {
-        var files = TestDirectory.GetAllFiles();
+        // Arrange & Act
+        var files = _testDirectory.GetAllFiles();
+
+        // Assert
         Assert.Multiple(() =>
         {
             Assert.That(files.GetType(), Is.EqualTo(typeof(FileInfo[])));
-            Assert.That(files.Any(x => x.FullName == TestFileMain.FullName), Is.True);
+            Assert.That(files.Any(x => x.FullName == _testFileMain.FullName), Is.True);
         });
     }
 
     [Test]
-    public void GetAllFilesWithPredicate()
+    public void GetAllFiles_ShouldReturnFilteredFileInfoArray()
     {
-        var files = TestDirectory.GetAllFiles(x => x.FullName == TestFileSecond.FullName);
+        // Arrange & Act
+        var files = _testDirectory.GetAllFiles(x => x.FullName == _testFileSecond.FullName);
+
+        // Assert
         Assert.Multiple(() =>
         {
             Assert.That(files.GetType(), Is.EqualTo(typeof(FileInfo[])));
-            Assert.That(files.First().FullName, Is.EqualTo(TestFileSecond.FullName));
+            Assert.That(files.First().FullName, Is.EqualTo(_testFileSecond.FullName));
         });
     }
 
     [Test]
-    public void EnumerateAllFiles()
+    public void EnumerateAllFiles_ShouldReturnEnumerable()
     {
-        var files = TestDirectory.EnumerateAllFiles();
+        // Arrange & Act
+        var files = _testDirectory.EnumerateAllFiles();
+
+        // Assert
         Assert.Multiple(() =>
         {
             Assert.That(files.GetType(), Is.EqualTo(typeof(FileSystemEnumerable<FileInfo>)));
-            Assert.That(files.Any(x => x.FullName == TestFileMain.FullName), Is.True);
+            Assert.That(files.Any(x => x.FullName == _testFileMain.FullName), Is.True);
         });
     }
 
     [Test]
-    public void EnumerateAllFilesPredicate()
+    public void EnumerateAllFiles_ShouldReturnFilteredEnumerable()
     {
-        var files = TestDirectory.EnumerateAllFiles(x => x.FullName == TestFileSecond.FullName);
-        Assert.That(files.First().FullName, Is.EqualTo(TestFileSecond.FullName));
+        // Arrange & Act
+        var files = _testDirectory.EnumerateAllFiles(x => x.FullName == _testFileSecond.FullName);
+
+        // Assert
+        Assert.That(files.First().FullName, Is.EqualTo(_testFileSecond.FullName));
     }
 
     [Test]
-    public void GetDirectoriesAs()
+    public void GetDirectoriesAs_ShouldReturnTimeSpanArray()
     {
-        var directories = TestDirectory.GetDirectoriesAs(x => TimeSpan.FromTicks(long.Parse(x.Name)));
+        // Arrange & Act
+        var directories = _testDirectory.GetDirectoriesAs(x => TimeSpan.FromTicks(long.Parse(x.Name)));
+
+        // Assert
         Assert.Multiple(() =>
         {
             Assert.That(directories.GetType(), Is.EqualTo(typeof(TimeSpan[])));
-            Assert.That(directories.First().Ticks.ToString(), Is.EqualTo(SubTestDirectory.Name));
+            Assert.That(directories.First().Ticks.ToString(), Is.EqualTo(_subTestDirectory.Name));
         });
     }
-    
+
     [Test]
-    public void EnumerateDirectoriesAs()
+    public void EnumerateDirectoriesAs_ShouldReturnTimeSpanEnumerable()
     {
-        var directories = TestDirectory.EnumerateDirectoriesAs(x => TimeSpan.FromTicks(long.Parse(x.Name)));
-        Assert.That(directories.First().Ticks.ToString(), Is.EqualTo(SubTestDirectory.Name));
+        // Arrange & Act
+        var directories = _testDirectory.EnumerateDirectoriesAs(x => TimeSpan.FromTicks(long.Parse(x.Name)));
+
+        // Assert
+        Assert.That(directories.First().Ticks.ToString(), Is.EqualTo(_subTestDirectory.Name));
     }
 }
