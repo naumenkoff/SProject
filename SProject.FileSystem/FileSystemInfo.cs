@@ -49,23 +49,23 @@ public static class FileSystemInfoExtensions
     ///     null if not found or <paramref name="throwException" /> is false.
     /// </returns>
     /// <exception cref="ArgumentException">Thrown if an unsupported <typeparamref name="T" /> is provided.</exception>
-    private static FileSystemInfo? Create<T>(bool throwException, params string?[] paths) where T : FileSystemInfo
+    public static FileSystemInfo? Create<T>(bool throwException, params string?[] paths) where T : FileSystemInfo
     {
-        string path;
         try
         {
             // Path.Combine checks for null in the whole collection and each element.
-            path = Path.Combine(paths!);
+            var path = Path.Combine(paths!);
+            
+            // To prevent single 'string.empty' in 'paths'
+            if (typeof(T) == typeof(FileInfo)) return new FileInfo(path);
+            if (typeof(T) == typeof(DirectoryInfo)) return new DirectoryInfo(path);
+            throw new ArgumentException("Unsupported FileSystemInfo type", typeof(T).Name);
         }
         catch (Exception)
         {
             if (throwException) throw;
             return default;
         }
-
-        if (typeof(T) == typeof(FileInfo)) return new FileInfo(path);
-        if (typeof(T) == typeof(DirectoryInfo)) return new DirectoryInfo(path);
-        throw new ArgumentException("Unsupported FileSystemInfo type", typeof(T).Name);
     }
 
     /// <summary>

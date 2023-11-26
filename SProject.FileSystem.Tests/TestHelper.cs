@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace SProject.FileSystem.Tests;
 
 public static class TestHelper
@@ -10,9 +12,9 @@ public static class TestHelper
         return file;
     }
 
-    public static DirectoryInfo CreateDirectory()
+    public static DirectoryInfo CreateDirectory([CallerMemberName] string name = nameof(TestHelper))
     {
-        var tempDirectory = Path.Combine(Path.GetTempPath(), nameof(TestHelper));
+        var tempDirectory = Path.Combine(Path.GetTempPath(), name);
         var directoryInfo = new DirectoryInfo(tempDirectory);
         directoryInfo.Create();
         return directoryInfo;
