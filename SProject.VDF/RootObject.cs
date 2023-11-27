@@ -14,11 +14,6 @@ public class RootObject : IRootObject
         return ValueObjects.GetValueOrDefault(key).As<T>();
     }
 
-    public T? GetRootObject<T>(string key) where T : IRootObject
-    {
-        return RootObjects.GetValueOrDefault(key).As<T>();
-    }
-
     public string Key { get; }
 
     #region Collection
