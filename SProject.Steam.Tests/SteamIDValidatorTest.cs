@@ -11,11 +11,11 @@ public class SteamIDValidatorTest
 
         // Act
         var result = SteamIDValidator.IsSteamID64(id64);
-        
+
         // Assert
         Assert.That(result, Is.True);
     }
-    
+
     [Test]
     public void IsSteamID64_FromIncorrectString_ReturnsFalse()
     {
@@ -24,7 +24,7 @@ public class SteamIDValidatorTest
 
         // Act
         var result = SteamIDValidator.IsSteamID64(id64);
-        
+
         // Assert
         Assert.That(result, Is.False);
     }
@@ -34,23 +34,23 @@ public class SteamIDValidatorTest
     {
         // Arrange
         const long id64 = 76561198073887158;
-        
+
         // Act
         var result = SteamIDValidator.IsSteamID64(id64);
-        
+
         // Assert
         Assert.That(result, Is.True);
     }
-    
+
     [Test]
     public void IsSteamID64_FromIncorrectLong_ReturnsTrue()
     {
         // Arrange
         const long id64 = 113621430;
-        
+
         // Act
         var result = SteamIDValidator.IsSteamID64(id64);
-        
+
         // Assert
         Assert.That(result, Is.False);
     }
@@ -63,11 +63,11 @@ public class SteamIDValidatorTest
 
         // Act
         var result = SteamIDValidator.IsSteamID32(id32);
-        
+
         // Assert
         Assert.That(result, Is.True);
     }
-    
+
     [Test]
     public void IsSteamID32_FromIncorrectString_ReturnsFalse()
     {
@@ -76,7 +76,7 @@ public class SteamIDValidatorTest
 
         // Act
         var result = SteamIDValidator.IsSteamID32(id32);
-        
+
         // Assert
         Assert.That(result, Is.False);
     }
@@ -89,10 +89,10 @@ public class SteamIDValidatorTest
 
         // Act
         var result = SteamIDValidator.IsSteamID32(id32);
-        
+
         // Assert
         Assert.That(result, Is.True);
-        
+
         // idk about id32 limits so
     }
 }

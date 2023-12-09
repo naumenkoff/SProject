@@ -62,7 +62,7 @@ public class SteamConverterTest
 
         // Act
         var id = SteamConverter.ToSteamID(id64, out var instance, out var type);
-        
+
         // Assert
         Assert.Multiple(() =>
         {
