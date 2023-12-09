@@ -9,10 +9,10 @@ public class DirectoryInfoExtensionsTest
     [OneTimeSetUp]
     public void Init()
     {
-        _testDirectory = TestHelper.CreateDirectory();
+        _testDirectory = TestHelper.FileSystemInfoCreator.CreateDirectory();
         _subTestDirectory = _testDirectory.CreateSubdirectory(DateTime.UtcNow.Ticks.ToString());
-        _testFileMain = TestHelper.CreateFile(_testDirectory);
-        _testFileSecond = TestHelper.CreateFile(_testDirectory);
+        _testFileMain = TestHelper.FileSystemInfoCreator.CreateFile(_testDirectory);
+        _testFileSecond = TestHelper.FileSystemInfoCreator.CreateFile(_testDirectory);
     }
 
     [OneTimeTearDown]

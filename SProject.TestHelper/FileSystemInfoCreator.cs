@@ -1,8 +1,8 @@
 using System.Runtime.CompilerServices;
 
-namespace SProject.FileSystem.Tests;
+namespace SProject.TestHelper;
 
-public static class TestHelper
+public static class FileSystemInfoCreator
 {
     public static FileInfo CreateFile(DirectoryInfo tempDirectory)
     {
@@ -12,7 +12,7 @@ public static class TestHelper
         return file;
     }
 
-    public static DirectoryInfo CreateDirectory([CallerMemberName] string name = nameof(TestHelper))
+    public static DirectoryInfo CreateDirectory([CallerMemberName] string name = nameof(FileSystemInfoCreator))
     {
         var tempDirectory = Path.Combine(Path.GetTempPath(), name);
         var directoryInfo = new DirectoryInfo(tempDirectory);

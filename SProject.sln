@@ -18,7 +18,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SProject.Math.Tests", "SPro
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SProject.Steam.Tests", "SProject.Steam.Tests\SProject.Steam.Tests.csproj", "{D572E087-8DA4-47CA-B7D6-A87D71C10210}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SProject.Windows", "SProject.Windows\SProject.Windows.csproj", "{D7E3EB0B-F529-4646-96AC-65186FF58D15}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SProject.TestHelper", "SProject.TestHelper\SProject.TestHelper.csproj", "{4F4ED115-0FCA-43B9-9B72-C7CA73169370}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -62,9 +62,9 @@ Global
 		{D572E087-8DA4-47CA-B7D6-A87D71C10210}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D572E087-8DA4-47CA-B7D6-A87D71C10210}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D572E087-8DA4-47CA-B7D6-A87D71C10210}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D7E3EB0B-F529-4646-96AC-65186FF58D15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D7E3EB0B-F529-4646-96AC-65186FF58D15}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D7E3EB0B-F529-4646-96AC-65186FF58D15}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D7E3EB0B-F529-4646-96AC-65186FF58D15}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F4ED115-0FCA-43B9-9B72-C7CA73169370}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F4ED115-0FCA-43B9-9B72-C7CA73169370}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F4ED115-0FCA-43B9-9B72-C7CA73169370}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F4ED115-0FCA-43B9-9B72-C7CA73169370}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

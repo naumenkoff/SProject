@@ -19,6 +19,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\SProject.FileSystem\SProject.FileSystem.csproj"/>
+        <ProjectReference Include="..\SProject.TestHelper\SProject.TestHelper.csproj"/>
     </ItemGroup>
 
 </Project>

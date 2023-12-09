@@ -6,8 +6,8 @@ public class FileInfoExtensionsTest
     [OneTimeSetUp]
     public void Init()
     {
-        _testDirectory = TestHelper.CreateDirectory();
-        _testFile = TestHelper.CreateFile(_testDirectory);
+        _testDirectory = TestHelper.FileSystemInfoCreator.CreateDirectory();
+        _testFile = TestHelper.FileSystemInfoCreator.CreateFile(_testDirectory);
     }
 
     [OneTimeTearDown]
