@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using Microsoft.Extensions.Options;
-using Microsoft.Win32;
 using SProject.FileSystem;
 using SProject.Steam.Abstractions;
 
@@ -8,10 +7,12 @@ namespace SProject.Steam;
 
 public sealed class SteamClientFinder : ISteamClientFinder
 {
+    private readonly ISteamInstallPathResolver<SteamPathNode> _steamInstallPathResolver;
     private readonly SteamOptions _steamOptions;
 
-    public SteamClientFinder(IOptions<SteamOptions> steamOptions)
+    public SteamClientFinder(IOptions<SteamOptions> steamOptions, ISteamInstallPathResolver<SteamPathNode> steamInstallPathResolver)
     {
+        _steamInstallPathResolver = steamInstallPathResolver;
         _steamOptions = steamOptions.Value;
     }
 
@@ -19,10 +20,7 @@ public sealed class SteamClientFinder : ISteamClientFinder
     {
         foreach (var node in _steamOptions.SteamPathNodes)
         {
-            using var hive = RegistryKey.OpenBaseKey(node.PathHive, RegistryView.Registry64);
-            using var steam = hive.OpenSubKey(node.Path);
-            if (steam?.GetValue(node.Name) is not string installPath) continue;
-
+            var installPath = _steamInstallPathResolver.GetInstallPath(node);
             var directoryInfo = FileSystemInfoExtensions.GetDirectoryInfo(false, installPath);
             if (directoryInfo is not null)
             {

@@ -10,6 +10,7 @@ public static class SteamClientServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         services.AddTransient<ISteamClientFinder, SteamClientFinder>();
+        services.AddTransient<ISteamInstallPathResolver<SteamPathNode>, RegistrySteamInstallPathResolver>();
 
         services.AddOptions<SteamOptions>();
         return services;
