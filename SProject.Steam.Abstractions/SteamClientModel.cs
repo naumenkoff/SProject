@@ -38,7 +38,7 @@ public class SteamClientModel
         if (rootObject.HasValues) return Enumerable.Empty<SteamClientModel>();
 
         var clients = new List<SteamClientModel>();
-        foreach (var vdfValue in rootObject.AllObjects.Where(x => x.Key == "path"))
+        foreach (var vdfValue in rootObject.AllObjects.Enumerate("path"))
         {
             var directoryInfo = FileSystemInfoExtensions.GetDirectoryInfo(false, vdfValue.Value);
             if (directoryInfo is null) continue;
