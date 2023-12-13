@@ -34,14 +34,13 @@ public class SteamClientModel
         var libraryfolders = FileSystemInfoExtensions.GetFileInfo(throwExceptionIfNotFound, steamapps.FullName, "libraryfolders.vdf");
         if (libraryfolders is null) return Enumerable.Empty<SteamClientModel>();
 
-        var rootObject = VdfSerializer.Parse(libraryfolders)["libraryfolders"];
-        if (rootObject is null || rootObject.RootObjects.Count == 0) return Enumerable.Empty<SteamClientModel>();
+        var rootObject = VdfSerializer.Parse(libraryfolders);
+        if (rootObject.HasValues) return Enumerable.Empty<SteamClientModel>();
 
         var clients = new List<SteamClientModel>();
-
-        foreach (var path in rootObject.RootObjects.Select(x => x.Value).Select(x => x.GetValue<string>("path")))
+        foreach (var vdfValue in rootObject.AllObjects.Where(x => x.Key == "path"))
         {
-            var directoryInfo = FileSystemInfoExtensions.GetDirectoryInfo(false, path);
+            var directoryInfo = FileSystemInfoExtensions.GetDirectoryInfo(false, vdfValue.Value);
             if (directoryInfo is null) continue;
 
             var steamClientModel = new SteamClientModel

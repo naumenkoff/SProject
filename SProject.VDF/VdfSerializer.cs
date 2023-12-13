@@ -3,96 +3,73 @@ using SProject.Vdf.Abstractions;
 
 namespace SProject.VDF;
 
-public static class VdfSerializer
+public class VdfSerializer
 {
-    public static IRootObject Parse(StreamReader streamReader)
+    public static VdfNode Parse(StreamReader streamReader)
     {
-        return Parse(streamReader, string.Empty);
+        var valueCollection = new VdfCollection<VdfValue>();
+        var containerCollection = new VdfCollection<VdfContainer>();
+        var rootContainer = Parse(streamReader, string.Empty, containerCollection, valueCollection);
+        return new VdfNode
+        {
+            Root = rootContainer.SingleOrDefault(),
+            AllContainers = containerCollection,
+            AllObjects = valueCollection
+        };
     }
 
-    public static IRootObject Parse(FileInfo fileInfo)
+    public static VdfNode Parse(FileInfo fileInfo)
     {
         using var stream = fileInfo.OpenText();
         return Parse(stream);
     }
 
-    public static IRootObject Parse(string path, Encoding? encoding = null)
+    public static VdfNode Parse(string path, Encoding? encoding = null)
     {
         using var stream = new StreamReader(path, encoding ?? Encoding.UTF8);
         return Parse(stream);
     }
 
-    private static IRootObject Parse(StreamReader stream, string key)
+    private static VdfContainer Parse(StreamReader stream, string key, VdfCollection<VdfContainer> containerCollection,
+        VdfCollection<VdfValue> valueCollection)
     {
-        var root = new RootObject(key);
+        var root = new VdfContainer(key);
+
         while (!stream.EndOfStream)
         {
             var line = stream.ReadLine()!;
 
             if (IsHeader(line))
             {
+                var keyValue = KeyValueExtractor.ExtractKeyValue(line);
+                if (string.IsNullOrEmpty(keyValue.key)) continue;
+
+                // "SomeKey" <-- We Are Here
+                // { <-- Skip
+                // ... <-- Parse
+                // } <-- returns vdfContainer
                 stream.ReadLine();
 
-                var list = Parse(stream, ExtractKeyValue(line).key);
-                root.RootObjects.Add(list.Key!, list);
+                // Adding VdfContainer to current container and shared container
+                var vdfContainer = Parse(stream, keyValue.key, containerCollection, valueCollection);
+                root.Containers.Add(vdfContainer);
+                containerCollection.Add(vdfContainer);
 
                 continue;
             }
 
             if (line[^1] == '}') return root;
 
-            var (valueKey, value) = ExtractKeyValue(line);
+            var (valueKey, value) = KeyValueExtractor.ExtractKeyValue(line);
             if (valueKey is null || value is null) continue;
 
-            root.ValueObjects.Add(valueKey, new ValueObject(valueKey, value));
+            // Adding VdfValue to current container and shared container
+            var vdfValue = new VdfValue(valueKey, value);
+            root.Objects.Add(vdfValue);
+            valueCollection.Add(vdfValue);
         }
 
         return root;
-    }
-
-    private static (string? key, string? value) ExtractKeyValue(ReadOnlySpan<char> line)
-    {
-        //      |
-        //		"ClientID"		"6877367328171335534"
-        var keyOpenBracketIndex = SpanHelper.IndexOf(line, '"');
-        if (keyOpenBracketIndex == -1) return (null, null);
-
-        //       |
-        //		"ClientID"		"6877367328171335534"
-        var keyContentStart = keyOpenBracketIndex + 1;
-
-        //               |
-        //		"ClientID"		"6877367328171335534"
-        var keyCloseBracketIndex = SpanHelper.IndexOf(line, '"', keyContentStart);
-        if (keyCloseBracketIndex == -1) return (null, null);
-
-        //                |
-        //		"ClientID"		"6877367328171335534"
-        var keyContentEnd = keyCloseBracketIndex + 1;
-
-        //      |ClientID|
-        //		"ClientID"		"6877367328171335534"
-        var valueKey = line.Slice(keyContentStart, keyCloseBracketIndex - keyContentStart);
-
-        //                      |
-        //		"ClientID"		"6877367328171335534"
-        var valueOpenBracketIndex = SpanHelper.IndexOf(line, '"', keyContentEnd);
-        if (valueOpenBracketIndex == -1) return (valueKey.ToString(), null);
-
-        //                       |
-        //		"ClientID"		"6877367328171335534"
-        var valueContentStart = valueOpenBracketIndex + 1;
-
-        //                                          |
-        //		"ClientID"		"6877367328171335534"
-        var valueCloseBracketIndex = SpanHelper.LastIndexOf(line, '"');
-        if (valueCloseBracketIndex == -1 || valueCloseBracketIndex == valueOpenBracketIndex) return (null, null);
-
-        //                      |6877367328171335534|
-        //		"ClientID"		"6877367328171335534"
-        var value = line.Slice(valueContentStart, valueCloseBracketIndex - valueContentStart);
-
-        return (valueKey.ToString(), value.ToString());
     }
 
     private static bool IsHeader(ReadOnlySpan<char> input)
