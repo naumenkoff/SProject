@@ -3,7 +3,7 @@ using SProject.Vdf.Abstractions;
 
 namespace SProject.VDF;
 
-public class VdfSerializer
+public static class StringVdfParser
 {
     public static VdfNode Parse(StreamReader streamReader)
     {
