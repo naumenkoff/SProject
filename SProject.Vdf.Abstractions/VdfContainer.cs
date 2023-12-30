@@ -23,4 +23,9 @@ public class VdfContainer : VdfObject, IEnumerable<VdfContainer>
     {
         return GetEnumerator();
     }
+
+    public VdfValue? GetValue(string key)
+    {
+        return Objects.SingleOrDefault(x => x.Key == key);
+    }
 }
