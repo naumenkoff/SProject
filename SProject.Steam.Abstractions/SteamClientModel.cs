@@ -35,7 +35,7 @@ public class SteamClientModel
         if (libraryfolders is null) return Enumerable.Empty<SteamClientModel>();
 
         var rootObject = ByteVdfParser.Parse(libraryfolders);
-        if (rootObject.HasValues) return Enumerable.Empty<SteamClientModel>();
+        if (!rootObject.HasValues) return Enumerable.Empty<SteamClientModel>();
 
         var clients = new List<SteamClientModel>();
         foreach (var vdfValue in rootObject.AllObjects.Enumerate("path"))
