@@ -9,4 +9,6 @@ public class VdfValue : VdfObject
     }
 
     public string Value { get; init; }
+
+    public static implicit operator string(VdfValue vdfValue) => vdfValue.Value;
 }
