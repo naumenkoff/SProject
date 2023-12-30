@@ -40,7 +40,7 @@ public class SteamClientModel
         var clients = new List<SteamClientModel>();
         foreach (var vdfValue in rootObject.AllObjects.Enumerate("path"))
         {
-            var directoryInfo = FileSystemInfoExtensions.GetDirectoryInfo(false, vdfValue.Value);
+            var directoryInfo = FileSystemInfoExtensions.GetDirectoryInfo(false, vdfValue);
             if (directoryInfo is null) continue;
 
             var steamClientModel = new SteamClientModel
