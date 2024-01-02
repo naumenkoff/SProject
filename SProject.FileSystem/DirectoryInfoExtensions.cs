@@ -25,9 +25,19 @@ public static class DirectoryInfoExtensions
         return directoryInfo.EnumerateFiles("*.*", SearchOption.AllDirectories).Where(predicate);
     }
 
+    public static DirectoryInfo[] GetDirectories(this DirectoryInfo directoryInfo, Func<DirectoryInfo, bool> predicate)
+    {
+        return directoryInfo.EnumerateDirectories().Where(predicate).ToArray();
+    }
+
     public static TResult[] GetDirectoriesAs<TResult>(this DirectoryInfo directoryInfo, Func<DirectoryInfo, TResult> selector)
     {
         return directoryInfo.GetDirectories().Select(selector).ToArray();
+    }
+
+    public static IEnumerable<DirectoryInfo> EnumerateDirectories(this DirectoryInfo directoryInfo, Func<DirectoryInfo, bool> predicate)
+    {
+        return directoryInfo.EnumerateDirectories().Where(predicate);
     }
 
     public static IEnumerable<TResult> EnumerateDirectoriesAs<TResult>(this DirectoryInfo directoryInfo, Func<DirectoryInfo, TResult> selector)
