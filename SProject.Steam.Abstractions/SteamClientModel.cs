@@ -24,7 +24,7 @@ public class SteamClientModel
         return FileSystemInfoExtensions.GetDirectoryInfo(throwExceptionIfNotFound, WorkingDirectory.FullName, "steamapps");
     }
 
-    public IEnumerable<SteamClientModel> GetAnotherInstallations(bool throwExceptionIfNotFound = false, bool force = false)
+    public IEnumerable<SteamClientModel> GetSteamLibraries(bool throwExceptionIfNotFound = false, bool force = false)
     {
         if (!force && _steamClientModels.Count != 0) return _steamClientModels;
 
