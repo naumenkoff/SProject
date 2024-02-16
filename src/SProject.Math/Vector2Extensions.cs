@@ -28,7 +28,8 @@ public static class Vector2Extensions
     {
         return vector2 with
         {
-            X = vector2.X * xValue
+            X = vector2.X * xValue,
+            Y = vector2.Y
         };
     }
 
@@ -36,6 +37,7 @@ public static class Vector2Extensions
     {
         return vector2 with
         {
+            X = vector2.X,
             Y = vector2.Y * yValue
         };
     }
