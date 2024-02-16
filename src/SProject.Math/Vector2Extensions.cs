@@ -9,6 +9,11 @@ public static class Vector2Extensions
         return new Vector2(float.Truncate(vector2.X), float.Truncate(vector2.Y));
     }
 
+    public static Vector2 Round(this Vector2 vector2)
+    {
+        return new Vector2(float.Round(vector2.X), float.Round(vector2.Y));
+    }
+
     public static Vector2 Lerp(this Vector2 vector2, double value)
     {
         return vector2 * (float) double.Clamp(value, 0.0, 1.0);
