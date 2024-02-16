@@ -6,7 +6,7 @@ public static class Vector2Extensions
 {
     public static Vector2 Floor(this Vector2 vector2)
     {
-        return new Vector2(float.Truncate(vector2.X), float.Truncate(vector2.Y));
+        return new Vector2(float.Floor(vector2.X), float.Floor(vector2.Y));
     }
 
     public static Vector2 Round(this Vector2 vector2)
