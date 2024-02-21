@@ -8,10 +8,9 @@ public static class ByteVdfParser
     {
         var valueCollection = new VdfCollection<VdfValue>();
         var containerCollection = new VdfCollection<VdfContainer>();
-        Read(buffer, null!, containerCollection, valueCollection, out var rootContainer);
         return new VdfNode
         {
-            Root = rootContainer.SingleOrDefault(),
+            Root = Read(buffer, containerCollection, valueCollection),
             AllContainers = containerCollection,
             AllObjects = valueCollection
         };
@@ -31,16 +30,20 @@ public static class ByteVdfParser
         return Parse(fileInfo);
     }
 
-    private static int Read(ReadOnlySpan<byte> buffer, string key, VdfCollection<VdfContainer> containerCollection,
-        VdfCollection<VdfValue> valueCollection, out VdfContainer rootContainer)
+    private static VdfContainer? Read(ReadOnlySpan<byte> buffer, VdfCollection<VdfContainer> containerCollection,
+        VdfCollection<VdfValue> valueCollection)
     {
-        rootContainer = new VdfContainer(key);
+        var rootContainer = new VdfContainer(null!);
         string nestedContainerKey = null!;
+
+        var stack = new Stack<VdfContainer>();
+        stack.Push(rootContainer);
 
         var index = 0;
         while (index < buffer.Length)
         {
             var value = buffer[index];
+            var container = stack.Peek();
 
             // If the current byte is '{'
             if (value.IsOpeningCurlyBrace())
@@ -51,25 +54,24 @@ public static class ByteVdfParser
                 // it means that current document is incorrect
                 ArgumentException.ThrowIfNullOrEmpty(nestedContainerKey);
 
-                // We are currently at '{', we need to move forward to avoid getting stuck in a loop
+                var newContainer = new VdfContainer(nestedContainerKey);
+                stack.Push(newContainer);
+                container.Containers.Add(newContainer);
+
                 index++;
-
-                // Reading the nested node
-                index += Read(buffer[index..], nestedContainerKey, containerCollection, valueCollection, out var vdfContainer);
-
-                // Adding a node to the tree of the current container and to the list of all containers
-                rootContainer.Containers.Add(vdfContainer);
-                containerCollection.Add(vdfContainer);
+                continue;
             }
 
             // If the current byte is '}'
             if (value.IsClosingCurlyBrace())
             {
-                // To prevent exiting immediately upon leaving from nesting, increment the index.
-                index++;
+                var filledContainer = stack.Pop();
+                containerCollection.Add(filledContainer);
 
+                // To prevent exiting immediately upon leaving from nesting, increment the index.
                 // End nesting
-                break;
+                index++;
+                continue;
             }
 
             var kv = DetermineKeyValue(buffer, ref index);
@@ -84,7 +86,7 @@ public static class ByteVdfParser
             }
         }
 
-        return index;
+        return rootContainer.SingleOrDefault();
     }
 
     private static (string? key, string? value) DetermineKeyValue(ReadOnlySpan<byte> buffer, ref int index)
@@ -93,13 +95,8 @@ public static class ByteVdfParser
 
         while (index < buffer.Length)
         {
-            var value = buffer[index];
-
-            if (keyStartIndex == 0 && (value.IsOpeningCurlyBrace() || value.IsClosingCurlyBrace())) break;
-
-            index++;
-
-            if (!value.IsDoubleQuote()) continue;
+            if (keyStartIndex == 0 && (buffer[index].IsOpeningCurlyBrace() || buffer[index].IsClosingCurlyBrace())) break;
+            if (!buffer[index++].IsDoubleQuote()) continue;
 
             if (keyStartIndex == 0 && (index == 1 || buffer[index - 2].IsTab()))
                 keyStartIndex = index;
