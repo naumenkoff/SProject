@@ -45,7 +45,7 @@ public class SteamClientModel
         var libraryfolders = FileSystemInfoExtensions.GetFileInfo(throwExceptionIfNotFound, steamapps.FullName, "libraryfolders.vdf");
         if (libraryfolders is null) return _steamClientModels = Enumerable.Empty<SteamClientModel>();
 
-        var rootObject = ByteVdfParser.Parse(libraryfolders);
+        var rootObject = VParser.Parse(libraryfolders);
         if (!rootObject.HasValues) return _steamClientModels = Enumerable.Empty<SteamClientModel>();
 
         // There may be ghost directories here,

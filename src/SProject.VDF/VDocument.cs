@@ -2,12 +2,12 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace SProject.VDF;
 
-public class VdfNode
+public sealed class VDocument
 {
-    public required VdfCollection<VdfContainer> AllContainers { get; init; }
-    public required VdfCollection<VdfValue> AllObjects { get; init; }
+    public required VCollection<VSection> AllContainers { get; init; }
+    public required VCollection<VValue> AllObjects { get; init; }
 
-    public required VdfContainer? Root { get; init; }
+    public required VSection? Root { get; init; }
 
     [MemberNotNullWhen(false, nameof(Root))]
     public bool Empty => Root is null || AllContainers.IsEmpty;

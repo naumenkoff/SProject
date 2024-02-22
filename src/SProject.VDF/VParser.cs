@@ -2,13 +2,13 @@ using System.Text;
 
 namespace SProject.VDF;
 
-public static class ByteVdfParser
+public static class VParser
 {
-    public static VdfNode Parse(ReadOnlySpan<byte> buffer)
+    public static VDocument Parse(ReadOnlySpan<byte> buffer)
     {
-        var valueCollection = new VdfCollection<VdfValue>();
-        var containerCollection = new VdfCollection<VdfContainer>();
-        return new VdfNode
+        var valueCollection = new VCollection<VValue>();
+        var containerCollection = new VCollection<VSection>();
+        return new VDocument
         {
             Root = Read(buffer, containerCollection, valueCollection),
             AllContainers = containerCollection,
@@ -16,7 +16,7 @@ public static class ByteVdfParser
         };
     }
 
-    public static VdfNode Parse(FileInfo fileInfo)
+    public static VDocument Parse(FileInfo fileInfo)
     {
         using var stream = fileInfo.OpenRead();
         using var memoryStream = new MemoryStream();
@@ -24,19 +24,19 @@ public static class ByteVdfParser
         return Parse(memoryStream.GetBuffer());
     }
 
-    public static VdfNode Parse(string path)
+    public static VDocument Parse(string path)
     {
         var fileInfo = new FileInfo(path);
         return Parse(fileInfo);
     }
 
-    private static VdfContainer? Read(ReadOnlySpan<byte> buffer, VdfCollection<VdfContainer> containerCollection,
-        VdfCollection<VdfValue> valueCollection)
+    private static VSection? Read(ReadOnlySpan<byte> buffer, VCollection<VSection> containerCollection,
+        VCollection<VValue> valueCollection)
     {
-        var rootContainer = new VdfContainer(null!);
+        var rootContainer = new VSection(null!);
         string nestedContainerKey = null!;
 
-        var stack = new Stack<VdfContainer>();
+        var stack = new Stack<VSection>();
         stack.Push(rootContainer);
 
         var index = 0;
@@ -54,7 +54,7 @@ public static class ByteVdfParser
                 // it means that current document is incorrect
                 ArgumentException.ThrowIfNullOrEmpty(nestedContainerKey);
 
-                var newContainer = new VdfContainer(nestedContainerKey);
+                var newContainer = new VSection(nestedContainerKey);
                 stack.Push(newContainer);
                 container.Containers.Add(newContainer);
 
@@ -77,12 +77,14 @@ public static class ByteVdfParser
             var kv = DetermineKeyValue(buffer, ref index);
             if (kv.key is null) continue;
             if (kv.value is null)
+            {
                 nestedContainerKey = kv.key;
+            }
             else
             {
-                var vdfValue = new VdfValue(kv.key, kv.value);
-                rootContainer.Objects.Add(vdfValue);
-                valueCollection.Add(vdfValue);
+                var vValue = new VValue(kv.key, kv.value);
+                rootContainer.Objects.Add(vValue);
+                valueCollection.Add(vValue);
             }
         }
 
@@ -95,15 +97,20 @@ public static class ByteVdfParser
 
         while (index < buffer.Length)
         {
-            if (keyStartIndex == 0 && (buffer[index].IsOpeningCurlyBrace() || buffer[index].IsClosingCurlyBrace())) break;
+            if (keyStartIndex == 0 &&
+                (buffer[index].IsOpeningCurlyBrace() || buffer[index].IsClosingCurlyBrace())) break;
             if (!buffer[index++].IsDoubleQuote()) continue;
 
             if (keyStartIndex == 0 && (index == 1 || buffer[index - 2].IsTab()))
+            {
                 keyStartIndex = index;
+            }
             else if (keyEndIndex == 0)
             {
                 if (buffer[index].IsTab())
+                {
                     keyEndIndex = index - 1;
+                }
                 else if (buffer[index].IsNewline())
                 {
                     keyEndIndex = index - 1;
@@ -111,7 +118,9 @@ public static class ByteVdfParser
                 }
             }
             else if (valueStartIndex == 0 && buffer[index - 2].IsTab())
+            {
                 valueStartIndex = index;
+            }
             else if (buffer[index].IsNewline())
             {
                 var valueEndIndex = index - 1;
