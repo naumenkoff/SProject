@@ -6,6 +6,7 @@ using SProject.TestHelper;
 namespace SProject.Steam.Tests;
 
 [TestFixture]
+[TestOf(typeof(DefaultSteamClientFinder))]
 public class DefaultSteamClientFinderTest
 {
     private static IOptions<SteamOptions> CreateSteamOptions(bool throwOnAbsence)

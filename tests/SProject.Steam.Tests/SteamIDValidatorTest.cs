@@ -1,6 +1,7 @@
 namespace SProject.Steam.Tests;
 
 [TestFixture]
+[TestOf(typeof(SteamIDValidator))]
 public class SteamIDValidatorTest
 {
     [Test]

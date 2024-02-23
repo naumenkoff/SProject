@@ -5,6 +5,7 @@ using TimeSpan = System.TimeSpan;
 namespace SProject.FileSystem.Tests;
 
 [TestFixture]
+[TestOf(typeof(DirectoryInfoExtensions))]
 public class DirectoryInfoExtensionsTest
 {
     [OneTimeSetUp]

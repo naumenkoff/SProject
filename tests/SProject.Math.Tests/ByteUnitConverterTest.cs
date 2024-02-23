@@ -1,6 +1,7 @@
 namespace SProject.Math.Tests;
 
 [TestFixture]
+[TestOf(typeof(ByteUnitConverter))]
 public class ByteUnitConverterTest
 {
     [Test]

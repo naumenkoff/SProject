@@ -3,6 +3,7 @@ using System.Numerics;
 namespace SProject.Math.Tests;
 
 [TestFixture]
+[TestOf(typeof(Vector2Extensions))]
 public class Vector2ExtensionsTests
 {
     [Test]

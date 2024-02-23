@@ -1,5 +1,7 @@
 namespace SProject.Steam.Tests;
 
+[TestFixture]
+[TestOf(typeof(SteamConverter))]
 public class SteamConverterTest
 {
     [Test]

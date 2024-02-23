@@ -1,6 +1,7 @@
 namespace SProject.Steam.Tests;
 
 [TestFixture]
+[TestOf(typeof(SteamClientModel))]
 public class SteamClientModelTest
 {
     [OneTimeSetUp]

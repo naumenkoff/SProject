@@ -3,6 +3,7 @@ using SProject.TestHelper;
 namespace SProject.FileSystem.Tests;
 
 [TestFixture]
+[TestOf(typeof(FileSystemInfoExtensions))]
 public class FileSystemInfoExtensionsTest
 {
     [OneTimeSetUp]
