@@ -70,16 +70,6 @@ public class DirectoryInfoExtensionsTest
     }
 
     [Test]
-    public void EnumerateAllFiles_ShouldReturnFilteredEnumerable()
-    {
-        // Arrange & Act
-        var files = _testDirectory.EnumerateAllFiles(x => x.FullName == _testFileSecond.FullName);
-
-        // Assert
-        Assert.That(files.First().FullName, Is.EqualTo(_testFileSecond.FullName));
-    }
-
-    [Test]
     public void GetDirectoriesAs_ShouldReturnTimeSpanArray()
     {
         // Arrange & Act
@@ -94,12 +84,16 @@ public class DirectoryInfoExtensionsTest
     }
 
     [Test]
-    public void EnumerateDirectoriesAs_ShouldReturnTimeSpanEnumerable()
+    public void GetDirectories_ShouldReturnTestSubDirectory()
     {
         // Arrange & Act
-        var directories = _testDirectory.EnumerateDirectoriesAs(x => TimeSpan.FromTicks(long.Parse(x.Name)));
+        var directories = _testDirectory.GetDirectories(x => x.FullName == _subTestDirectory.FullName);
 
         // Assert
-        Assert.That(directories.First().Ticks.ToString(), Is.EqualTo(_subTestDirectory.Name));
+        Assert.Multiple(() =>
+        {
+            Assert.That(directories, Has.Length.EqualTo(1));
+            Assert.That(directories.Single().FullName, Is.EqualTo(_subTestDirectory.FullName));
+        });
     }
 }
