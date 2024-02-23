@@ -23,6 +23,23 @@ public class Vector2ExtensionsTests
     }
 
     [Test]
+    public void Round_ReturnsRoundedVector()
+    {
+        // Arrange
+        var vector2 = new Vector2((float) System.Math.PI, (float) System.Math.E);
+
+        // Act
+        var flooredVector2 = vector2.Round();
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(flooredVector2.X, Is.EqualTo(3));
+            Assert.That(flooredVector2.Y, Is.EqualTo(3));
+        });
+    }
+
+    [Test]
     public void LerpDouble_ReturnsLerpedVector()
     {
         // Arrange
