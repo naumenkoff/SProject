@@ -12,7 +12,17 @@ public static class DirectoryInfoExtensions
 
     public static FileInfo[] GetAllFiles(this DirectoryInfo directoryInfo, Func<FileInfo, bool> predicate)
     {
-        return directoryInfo.GetFiles("*.*", SearchOption.AllDirectories).Where(predicate).ToArray();
+        return directoryInfo.EnumerateAllFiles(predicate).ToArray();
+    }
+
+    public static DirectoryInfo[] GetDirectories(this DirectoryInfo directoryInfo, Func<DirectoryInfo, bool> predicate)
+    {
+        return directoryInfo.EnumerateDirectories(predicate).ToArray();
+    }
+
+    public static TResult[] GetDirectoriesAs<TResult>(this DirectoryInfo directoryInfo, Func<DirectoryInfo, TResult> selector)
+    {
+        return directoryInfo.EnumerateDirectoriesAs(selector).ToArray();
     }
 
     public static IEnumerable<FileInfo> EnumerateAllFiles(this DirectoryInfo directoryInfo)
@@ -23,16 +33,6 @@ public static class DirectoryInfoExtensions
     public static IEnumerable<FileInfo> EnumerateAllFiles(this DirectoryInfo directoryInfo, Func<FileInfo, bool> predicate)
     {
         return directoryInfo.EnumerateFiles("*.*", SearchOption.AllDirectories).Where(predicate);
-    }
-
-    public static DirectoryInfo[] GetDirectories(this DirectoryInfo directoryInfo, Func<DirectoryInfo, bool> predicate)
-    {
-        return directoryInfo.EnumerateDirectories().Where(predicate).ToArray();
-    }
-
-    public static TResult[] GetDirectoriesAs<TResult>(this DirectoryInfo directoryInfo, Func<DirectoryInfo, TResult> selector)
-    {
-        return directoryInfo.GetDirectories().Select(selector).ToArray();
     }
 
     public static IEnumerable<DirectoryInfo> EnumerateDirectories(this DirectoryInfo directoryInfo, Func<DirectoryInfo, bool> predicate)
