@@ -45,13 +45,13 @@ public class SteamClientModel
         var libraryfolders = FileSystemInfoExtensions.GetFileInfo(throwExceptionIfNotFound, steamapps.FullName, "libraryfolders.vdf");
         if (libraryfolders is null) return _steamClientModels = Enumerable.Empty<SteamClientModel>();
 
-        var rootObject = VParser.Parse(libraryfolders);
-        if (!rootObject.HasValues) return _steamClientModels = Enumerable.Empty<SteamClientModel>();
+        var rootObject = ValveDataFileParser.Parse(libraryfolders);
+        if (!rootObject.HasProperties) return _steamClientModels = Enumerable.Empty<SteamClientModel>();
 
         // There may be ghost directories here,
         // so throwing an exception, by 'throw exception if not found' parameter value,
         // will lead to inconsistent behavior.
-        var clients = rootObject.AllObjects.Enumerate("path").Select(path => FileSystemInfoExtensions.GetDirectoryInfo(false, path))
+        var clients = rootObject.Properties.Enumerate("path").Select(path => FileSystemInfoExtensions.GetDirectoryInfo(false, path))
             .OfType<DirectoryInfo>().Select(directory => new SteamClientModel
             {
                 WorkingDirectory = directory,

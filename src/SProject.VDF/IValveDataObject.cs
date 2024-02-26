@@ -1,6 +1,6 @@
 namespace SProject.VDF;
 
-public interface IVObject
+public interface IValveDataObject
 {
     string Key { get; init; }
 }

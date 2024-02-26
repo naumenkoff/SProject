@@ -1,22 +1,24 @@
 using System.Text;
+using SProject.VDF.Collections;
+using SProject.VDF.Extensions;
 
 namespace SProject.VDF;
 
-public static class VParser
+public static class ValveDataFileParser
 {
-    public static VDocument Parse(ReadOnlySpan<byte> buffer)
+    public static ValveDataDocument Parse(ReadOnlySpan<byte> buffer)
     {
-        var valueCollection = new VCollection<VValue>();
-        var containerCollection = new VCollection<VSection>();
-        return new VDocument
+        var properties = new ValveDataCollection<ValveDataProperty>();
+        var sections = new ValveDataCollection<ValveDataSection>();
+        return new ValveDataDocument
         {
-            Root = Read(buffer, containerCollection, valueCollection),
-            AllContainers = containerCollection,
-            AllObjects = valueCollection
+            PrimarySection = Read(buffer, sections, properties),
+            Sections = sections,
+            Properties = properties
         };
     }
 
-    public static VDocument Parse(FileInfo fileInfo)
+    public static ValveDataDocument Parse(FileInfo fileInfo)
     {
         using var stream = fileInfo.OpenRead();
         using var memoryStream = new MemoryStream();
@@ -24,26 +26,27 @@ public static class VParser
         return Parse(memoryStream.GetBuffer());
     }
 
-    public static VDocument Parse(string path)
+    public static ValveDataDocument Parse(string path)
     {
         var fileInfo = new FileInfo(path);
         return Parse(fileInfo);
     }
 
-    private static VSection? Read(ReadOnlySpan<byte> buffer, VCollection<VSection> containerCollection,
-        VCollection<VValue> valueCollection)
+    private static ValveDataSection? Read(ReadOnlySpan<byte> buffer,
+        ValveDataCollection<ValveDataSection> sections,
+        ValveDataCollection<ValveDataProperty> properties)
     {
-        var rootContainer = new VSection(null!);
-        string nestedContainerKey = null!;
+        var primarySection = new ValveDataSection(null!);
+        var sectionKey = default(string);
 
-        var stack = new Stack<VSection>();
-        stack.Push(rootContainer);
+        var stack = new Stack<ValveDataSection>();
+        stack.Push(primarySection);
 
         var index = 0;
         while (index < buffer.Length)
         {
             var value = buffer[index];
-            var container = stack.Peek();
+            var parentSection = stack.Peek();
 
             // If the current byte is '{'
             if (value.IsOpeningCurlyBrace())
@@ -52,11 +55,11 @@ public static class VParser
                 // Since we have a structure like "Key" { "Values" }
                 // If we got here, and the key is null or empty,
                 // it means that current document is incorrect
-                ArgumentException.ThrowIfNullOrEmpty(nestedContainerKey);
+                ArgumentException.ThrowIfNullOrEmpty(sectionKey);
 
-                var newContainer = new VSection(nestedContainerKey);
-                stack.Push(newContainer);
-                container.Containers.Add(newContainer);
+                var childSection = new ValveDataSection(sectionKey);
+                stack.Push(childSection);
+                parentSection.Add(childSection);
 
                 index++;
                 continue;
@@ -65,8 +68,9 @@ public static class VParser
             // If the current byte is '}'
             if (value.IsClosingCurlyBrace())
             {
-                var filledContainer = stack.Pop();
-                containerCollection.Add(filledContainer);
+                // if (stack.Pop() == parentSection) sections.Add(parentSection); 
+                // else throw new InvalidOperationException();
+                sections.Add(stack.Pop());
 
                 // To prevent exiting immediately upon leaving from nesting, increment the index.
                 // End nesting
@@ -78,17 +82,17 @@ public static class VParser
             if (kv.key is null) continue;
             if (kv.value is null)
             {
-                nestedContainerKey = kv.key;
+                sectionKey = kv.key;
             }
             else
             {
-                var vValue = new VValue(kv.key, kv.value);
-                rootContainer.Objects.Add(vValue);
-                valueCollection.Add(vValue);
+                var property = new ValveDataProperty(kv.key, kv.value);
+                primarySection.Add(property);
+                properties.Add(property);
             }
         }
 
-        return rootContainer.SingleOrDefault();
+        return primarySection.SingleOrDefault();
     }
 
     private static (string? key, string? value) DetermineKeyValue(ReadOnlySpan<byte> buffer, ref int index)

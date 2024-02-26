@@ -1,4 +1,4 @@
-﻿namespace SProject.VDF;
+﻿namespace SProject.VDF.Extensions;
 
 internal static class ByteExtensions
 {
