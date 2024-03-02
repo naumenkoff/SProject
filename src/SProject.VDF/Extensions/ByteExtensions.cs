@@ -1,29 +1,30 @@
-﻿namespace SProject.VDF.Extensions;
+﻿using System.Runtime.CompilerServices;
+
+namespace SProject.VDF.Extensions;
 
 internal static class ByteExtensions
 {
-    public static bool IsTab(this byte value)
-    {
-        return value == 0x9;
-    }
-
-    public static bool IsNewline(this byte value)
-    {
-        return value == 10;
-    }
-
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsDoubleQuote(this byte value)
     {
         return value == 0x22;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsOpeningCurlyBrace(this byte value)
     {
         return value == 0x7B;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsClosingCurlyBrace(this byte value)
     {
         return value == 0x7D;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsBackslash(this byte value)
+    {
+        return value == 0x5C;
     }
 }
