@@ -1,5 +1,3 @@
-// ReSharper disable once CheckNamespace
-
 namespace SProject.VDF.Extensions;
 
 public static partial class ValveDataPropertyExtensions

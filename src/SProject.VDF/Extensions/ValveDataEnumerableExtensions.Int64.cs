@@ -1,7 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using SProject.VDF.Collections;
 
-// ReSharper disable once CheckNamespace
 namespace SProject.VDF.Extensions;
 
 public static partial class ValveDataEnumerableExtensions
