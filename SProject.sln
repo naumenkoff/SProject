@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SProject.TestHelper", "test
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SProject.Steam.Tests", "tests\SProject.Steam.Tests\SProject.Steam.Tests.csproj", "{B4E3A3B5-F08C-42AC-8E7E-25E4A35B15A4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SProject.DependencyInjection", "src\SProject.DependencyInjection\SProject.DependencyInjection.csproj", "{C771F4FC-CE8A-46F2-9973-126A5328B355}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,6 +38,7 @@ Global
 		{95205C4C-D54A-4B20-85D5-96448C880D52} = {15CD7D3E-6A42-47ED-B674-A1AEA47C27CB}
 		{13472CEA-D5F0-4995-AFEE-F9D2F38B3B78} = {15CD7D3E-6A42-47ED-B674-A1AEA47C27CB}
 		{B4E3A3B5-F08C-42AC-8E7E-25E4A35B15A4} = {15CD7D3E-6A42-47ED-B674-A1AEA47C27CB}
+		{C771F4FC-CE8A-46F2-9973-126A5328B355} = {5B9AF567-CE74-4455-9655-4F9948758528}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{13ED4778-8F00-447B-9A60-F3F4CCA6803F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -74,5 +77,9 @@ Global
 		{B4E3A3B5-F08C-42AC-8E7E-25E4A35B15A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B4E3A3B5-F08C-42AC-8E7E-25E4A35B15A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B4E3A3B5-F08C-42AC-8E7E-25E4A35B15A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C771F4FC-CE8A-46F2-9973-126A5328B355}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C771F4FC-CE8A-46F2-9973-126A5328B355}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C771F4FC-CE8A-46F2-9973-126A5328B355}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C771F4FC-CE8A-46F2-9973-126A5328B355}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
