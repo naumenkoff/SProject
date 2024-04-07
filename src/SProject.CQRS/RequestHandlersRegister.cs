@@ -9,7 +9,7 @@ public static class RequestHandlersRegister
     {
         serviceCollection.TryAddSingleton<IRequestResolver, RequestResolver>();
 
-        foreach (var type in AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetTypes().Where(t => t.IsClass)))
+        foreach (var type in AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetTypes()).Where(t => t.IsClass))
         foreach (var @interface in type.GetInterfaces().Where(x => x.IsGenericType))
         {
             var definition = @interface.GetGenericTypeDefinition();
