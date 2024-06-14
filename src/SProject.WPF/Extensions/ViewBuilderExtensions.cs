@@ -11,7 +11,7 @@ public static class ViewBuilderExtensions
     public static IServiceCollection AddView<T, TVm>(this IServiceCollection serviceCollection)
         where T : IMainViewOf<TVm> where TVm : ObservableObject
     {
-        return serviceCollection.AddHostedService<StartupService<T, TVm>>().RegisterView<T>();
+        return serviceCollection.AddHostedService<StartupService<TVm>>().RegisterView<T>();
     }
 
     private static IServiceCollection RegisterView<T>(this IServiceCollection serviceCollection)
