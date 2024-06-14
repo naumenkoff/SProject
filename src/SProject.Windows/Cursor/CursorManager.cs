@@ -18,8 +18,6 @@ public class CursorManager
 
     public CursorState GetCursorState()
     {
-        if (TryGetCursorInfo(out var cursorInfo)) return (CursorState) cursorInfo.flags;
-
-        return CursorState.Failed;
+        return TryGetCursorInfo(out var cursorInfo) ? (CursorState)cursorInfo.flags : CursorState.Failed;
     }
 }

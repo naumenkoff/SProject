@@ -19,8 +19,7 @@ public class SteamClientServiceCollectionExtensionsTest
         Assert.Multiple(() =>
         {
             Assert.That(serviceCollection, Has.One.Matches<ServiceDescriptor>(x => x.ServiceType == typeof(ISteamClientFinder)));
-            Assert.That(serviceCollection,
-                Has.One.Matches<ServiceDescriptor>(x => x.ServiceType == typeof(ISteamInstallPathResolver<SteamPathNode>)));
+            Assert.That(serviceCollection, Has.One.Matches<ServiceDescriptor>(x => x.ServiceType == typeof(ISteamInstallPathResolver<SteamPathNode>)));
         });
     }
 }
