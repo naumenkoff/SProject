@@ -3,4 +3,5 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace SProject.WPF.Abstractions;
 
-public interface IViewOf<[SuppressMessage("ReSharper", "UnusedTypeParameter")] TVm> where TVm : ObservableObject;
+[SuppressMessage("ReSharper", "UnusedTypeParameter")]
+public interface IViewOf<TVm> where TVm : ObservableObject;

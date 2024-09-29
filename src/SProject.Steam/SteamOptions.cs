@@ -4,8 +4,8 @@ namespace SProject.Steam;
 
 public class SteamOptions
 {
-    public List<SteamPathNode> SteamPathNodes { get; set; } = new List<SteamPathNode>
-    {
+    public List<SteamPathNode> SteamPathNodes { get; init; } =
+    [
         new SteamPathNode
         {
             Name = "SteamPath",
@@ -18,7 +18,7 @@ public class SteamOptions
             Path = @"SOFTWARE\WOW6432Node\Valve\Steam",
             PathHive = RegistryHive.LocalMachine
         }
-    };
+    ];
 
-    public bool ThrowOnAbsence { get; set; }
+    public bool ThrowOnAbsence { get; init; }
 }

@@ -51,12 +51,14 @@ public class SteamClientModel
         // There may be ghost directories here,
         // so throwing an exception, by 'throw exception if not found' parameter value,
         // will lead to inconsistent behavior.
-        var clients = rootObject.Properties.Where(x => x.Key == "path").Select(path => FileSystemInfoExtensions.GetDirectoryInfo(false, path))
-            .OfType<DirectoryInfo>().Select(directory => new SteamClientModel
-            {
-                WorkingDirectory = directory,
-                IsRootDirectory = IsRootDirectory && directory.FullName == WorkingDirectory.FullName
-            }).ToList();
+        var clients = rootObject.Properties
+                                .Where(x => x.Key == "path")
+                                .Select(path => FileSystemInfoExtensions.GetDirectoryInfo(false, path))
+                                .OfType<DirectoryInfo>().Select(directory => new SteamClientModel
+                                {
+                                    WorkingDirectory = directory,
+                                    IsRootDirectory = IsRootDirectory && directory.FullName == WorkingDirectory.FullName
+                                }).ToList();
 
         if (throwExceptionIfNotFound && clients.Count == 0) throw new NotImplementedException();
         return _steamClientModels = clients;

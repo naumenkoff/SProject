@@ -4,7 +4,7 @@ namespace SProject.Windows.Cursor.Internal;
 
 public struct CursorInfo
 {
-    public static readonly CursorInfo Empty = new CursorInfo
+    public static readonly CursorInfo Empty = new()
     {
         cbSize = Marshal.SizeOf(typeof(CursorInfo))
     };

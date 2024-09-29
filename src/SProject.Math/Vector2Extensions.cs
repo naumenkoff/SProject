@@ -16,7 +16,7 @@ public static class Vector2Extensions
 
     public static Vector2 Lerp(this Vector2 vector2, double value)
     {
-        return vector2 * (float) double.Clamp(value, 0.0, 1.0);
+        return vector2 * (float)double.Clamp(value, 0.0, 1.0);
     }
 
     public static Vector2 Lerp(this Vector2 vector2, float value)

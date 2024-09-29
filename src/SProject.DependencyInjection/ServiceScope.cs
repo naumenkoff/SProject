@@ -2,10 +2,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace SProject.DependencyInjection;
 
-public sealed class ServiceScope<T>(IServiceScope scope) : IServiceScope<T>
-    where T : class
+public sealed class ServiceScope<T>(IServiceScope scope) : IServiceScope<T> where T : class
 {
-    private bool _disposed;
+    private int _disposed;
 
     public T GetRequiredService()
     {
@@ -40,11 +39,9 @@ public sealed class ServiceScope<T>(IServiceScope scope) : IServiceScope<T>
 
     private void Dispose(bool disposing)
     {
-        if (!_disposed)
-        {
-            if (disposing) scope.Dispose();
-            _disposed = true;
-        }
+        if (Interlocked.CompareExchange(ref _disposed, 1, 0) == 0)
+            if (disposing)
+                scope.Dispose();
     }
 
     ~ServiceScope()

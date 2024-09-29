@@ -1,20 +1,26 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace SProject.CQRS;
 
+[SuppressMessage("ReSharper", "UnusedType.Global")]
+[SuppressMessage("ReSharper", "UnusedMember.Global")]
 public static class RequestHandlersRegister
 {
     public static IServiceCollection RegisterRequestHandlers(this IServiceCollection serviceCollection)
     {
         serviceCollection.TryAddSingleton<IRequestResolver, RequestResolver>();
 
-        foreach (var type in AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetTypes()).Where(t => t.IsClass))
-        foreach (var @interface in type.GetInterfaces().Where(x => x.IsGenericType))
+        foreach (var someClass in AppDomain.CurrentDomain
+                                      .GetAssemblies()
+                                      .SelectMany(x => x.GetTypes())
+                                      .Where(t => t.IsClass))
+        foreach (var someClassInterface in someClass.GetInterfaces().Where(x => x.IsGenericType))
         {
-            var definition = @interface.GetGenericTypeDefinition();
+            var definition = someClassInterface.GetGenericTypeDefinition();
             if (definition == typeof(IRequestHandler<>) || definition == typeof(IRequestHandler<,>))
-                serviceCollection.TryAddTransient(@interface, type);
+                serviceCollection.TryAddTransient(someClassInterface, someClass);
         }
 
         return serviceCollection;

@@ -30,7 +30,7 @@ public static class SteamConverter
     /// </remarks>
     public static uint ToSteamID32(long steamID64)
     {
-        return (uint) (steamID64 & uint.MaxValue);
+        return (uint)(steamID64 & uint.MaxValue);
     }
 
     /// <summary>
@@ -83,10 +83,10 @@ public static class SteamConverter
         var z = (steamID64 >> 1) & 0x7FFFFFFF;
 
         // The next 20 bits represent the instance of the account. It is usually set to 1 for user accounts.
-        instance = (int) (steamID64 >> 32) & 0xFFFFF;
+        instance = (int)(steamID64 >> 32) & 0xFFFFF;
 
         // The next 4 bits represent the type of account.
-        type = (int) (steamID64 >> 52) & 0xF;
+        type = (int)(steamID64 >> 52) & 0xF;
 
         // The next 8 bits represent the "Universe" the steam account belongs to.
         // X represents the "Universe" the steam account belongs to.

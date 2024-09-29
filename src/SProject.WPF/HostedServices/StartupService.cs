@@ -4,7 +4,8 @@ using SProject.WPF.Abstractions;
 
 namespace SProject.WPF.HostedServices;
 
-internal sealed class StartupService<TVm>(IMainViewOf<TVm> mainView) : BackgroundService where TVm : ObservableObject
+internal sealed class StartupService<TMainViewModel>(IMainViewOf<TMainViewModel> mainView)
+    : BackgroundService where TMainViewModel : ObservableObject
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {

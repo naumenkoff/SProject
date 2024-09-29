@@ -1,5 +1,8 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace SProject.DependencyInjection;
 
+[SuppressMessage("ReSharper", "UnusedMember.Global")]
 public interface IServiceScope<out T> : IDisposable where T : class
 {
     T GetRequiredService();

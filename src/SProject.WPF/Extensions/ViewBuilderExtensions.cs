@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -6,17 +7,20 @@ using SProject.WPF.HostedServices;
 
 namespace SProject.WPF.Extensions;
 
+[SuppressMessage("ReSharper", "UnusedType.Global")]
+[SuppressMessage("ReSharper", "UnusedMember.Global")]
 public static class ViewBuilderExtensions
 {
-    public static IServiceCollection AddView<T, TVm>(this IServiceCollection serviceCollection)
-        where T : IMainViewOf<TVm> where TVm : ObservableObject
+    public static IServiceCollection AddView<TMainView, TMainViewModel>(this IServiceCollection serviceCollection)
+        where TMainView : IMainViewOf<TMainViewModel>
+        where TMainViewModel : ObservableObject
     {
-        return serviceCollection.AddHostedService<StartupService<TVm>>().RegisterView<T>();
+        return serviceCollection.AddHostedService<StartupService<TMainViewModel>>().RegisterView<TMainView>();
     }
 
-    private static IServiceCollection RegisterView<T>(this IServiceCollection serviceCollection)
+    private static IServiceCollection RegisterView<TView>(this IServiceCollection serviceCollection)
     {
-        foreach (var type in typeof(T).Assembly.GetTypes())
+        foreach (var type in typeof(TView).Assembly.GetTypes())
         {
             if (!type.IsClass)
                 continue;

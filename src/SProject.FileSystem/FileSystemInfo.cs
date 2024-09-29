@@ -1,4 +1,6 @@
-﻿namespace SProject.FileSystem;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace SProject.FileSystem;
 
 /// <summary>
 ///     Provides utility methods for creating instances of <see cref="System.IO.FileSystemInfo" /> types.
@@ -18,7 +20,7 @@ public static class FileSystemInfoExtensions
     public static FileInfo? GetFileInfo(bool throwException, params string?[] paths)
     {
         var fileSystemInfo = Create<FileInfo>(throwException, paths);
-        return fileSystemInfo.Exists() ? (FileInfo) fileSystemInfo! : default;
+        return fileSystemInfo.Exists() ? (FileInfo) fileSystemInfo : default;
     }
 
     /// <summary>
@@ -34,7 +36,7 @@ public static class FileSystemInfoExtensions
     public static DirectoryInfo? GetDirectoryInfo(bool throwException, params string?[] paths)
     {
         var fileSystemInfo = Create<DirectoryInfo>(throwException, paths);
-        return fileSystemInfo.Exists() ? (DirectoryInfo) fileSystemInfo! : default;
+        return fileSystemInfo.Exists() ? (DirectoryInfo) fileSystemInfo : default;
     }
 
     /// <summary>
@@ -73,7 +75,7 @@ public static class FileSystemInfoExtensions
     /// </summary>
     /// <param name="fileSystemInfo">The <see cref="System.IO.FileSystemInfo" /> instance to check.</param>
     /// <returns>True if the instance is not null and exists, otherwise false.</returns>
-    public static bool Exists(this FileSystemInfo? fileSystemInfo)
+    public static bool Exists([NotNullWhen(true)] this FileSystemInfo? fileSystemInfo)
     {
         return fileSystemInfo is { Exists: true };
     }

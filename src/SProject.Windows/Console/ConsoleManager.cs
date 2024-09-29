@@ -29,13 +29,13 @@ public sealed class ConsoleManager : IDisposable
 
     public void ShowConsole()
     {
-        if (HasConsoleWindow(out var handle)) 
+        if (HasConsoleWindow(out var handle))
             ConsoleInvoke.ShowWindow(handle, (int)ShowWindow.Show);
     }
 
     public void HideConsole()
     {
-        if (HasConsoleWindow(out var handle)) 
+        if (HasConsoleWindow(out var handle))
             ConsoleInvoke.ShowWindow(handle, (int)ShowWindow.Hide);
     }
 
