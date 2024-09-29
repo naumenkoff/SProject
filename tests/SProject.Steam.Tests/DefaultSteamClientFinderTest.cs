@@ -9,27 +9,22 @@ namespace SProject.Steam.Tests;
 [TestOf(typeof(DefaultSteamClientFinder))]
 public class DefaultSteamClientFinderTest
 {
-    private static IOptions<SteamOptions> CreateSteamOptions(bool throwOnAbsence)
+    private static OptionsWrapper<SteamOptions> CreateSteamOptions(bool throwOnAbsence)
     {
         var options = new SteamOptions
         {
             ThrowOnAbsence = throwOnAbsence,
-            SteamPathNodes = new List<SteamPathNode>
-            {
-                CreateSteamPathNode()
-            }
+            SteamPathNodes =
+            [
+                new SteamPathNode()
+                {
+                    Name = "SteamPath",
+                    Path = @"Software\Valve\Steam",
+                    PathHive = RegistryHive.CurrentUser
+                }
+            ]
         };
         return new OptionsWrapper<SteamOptions>(options);
-    }
-
-    private static SteamPathNode CreateSteamPathNode()
-    {
-        return new SteamPathNode
-        {
-            Name = "SteamPath",
-            Path = @"Software\Valve\Steam",
-            PathHive = RegistryHive.CurrentUser
-        };
     }
 
     [Test]

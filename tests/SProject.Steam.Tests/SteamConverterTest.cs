@@ -5,86 +5,55 @@ namespace SProject.Steam.Tests;
 public class SteamConverterTest
 {
     [Test]
-    public void ToSteamID64_FromSteamID32_ReturnsSteamID64()
+    [TestCase(113621430u, 76561198073887158)]
+    public void ToSteamID64_FromSteamID32_ReturnsSteamID64(uint value, long expected)
     {
-        // Arrange
-        const uint id32 = 113621430;
-
-        // Act
-        var id64 = SteamConverter.ToSteamID64(id32);
-
-        // Assert
-        Assert.That(id64, Is.EqualTo(76561198073887158));
+        var result = SteamConverter.ToSteamID64(value);
+        Assert.That(result, Is.EqualTo(expected));
     }
 
     [Test]
-    public void ToSteamID32_FromSteamID64_ReturnsSteamID32()
+    [TestCase(76561198073887158, 113621430u)]
+    public void ToSteamID32_FromSteamID64_ReturnsSteamID32(long value, uint expected)
     {
-        // Arrange
-        const long id64 = 76561198073887158;
-
-        // Act
-        var id32 = SteamConverter.ToSteamID32(id64);
-
-        // Assert
-        Assert.That(id32, Is.EqualTo(113621430));
+        var result = SteamConverter.ToSteamID32(value);
+        Assert.That(result, Is.EqualTo(expected));
     }
 
     [Test]
-    public void ToSteamPermanentUrl_FromSteamID64_ReturnsSteamPermanentUrl()
+    [TestCase(76561198073887158, "https://steamcommunity.com/profiles/76561198073887158")]
+    public void ToSteamPermanentUrl_FromSteamID64_ReturnsSteamPermanentUrl(long value, string expected)
     {
-        // Arrange
-        const long id64 = 76561198073887158;
-
-        // Act
-        var url = SteamConverter.ToSteamPermanentUrl(id64);
-
-        // Assert
-        Assert.That(url, Is.EqualTo("https://steamcommunity.com/profiles/76561198073887158"));
+        var result = SteamConverter.ToSteamPermanentUrl(value);
+        Assert.That(result, Is.EqualTo(expected));
     }
 
     [Test]
-    public void ToSteamID3_FromSteamID32_ReturnsSteamID3()
+    [TestCase(113621430u, "[U:1:113621430]")]
+    public void ToSteamID3_FromSteamID32_ReturnsSteamID3(uint value, string expected)
     {
-        // Arrange
-        const uint id32 = 113621430;
-
-        // Act
-        var id3 = SteamConverter.ToSteamID3(id32);
-
-        // Assert
-        Assert.That(id3, Is.EqualTo("[U:1:113621430]"));
+        var result = SteamConverter.ToSteamID3(value);
+        Assert.That(result, Is.EqualTo(expected));
     }
 
     [Test]
-    public void ToSteamID_FromSteamID64_ReturnsSteamID()
+    [TestCase(76561198073887158, "STEAM_1:0:56810715", 1, 1)]
+    public void ToSteamID_FromSteamID64_ReturnsSteamID(long id64, string expectedId, int expectedInstance, int expectedT)
     {
-        // Arrange
-        const long id64 = 76561198073887158;
-
-        // Act
         var id = SteamConverter.ToSteamID(id64, out var instance, out var type);
-
-        // Assert
         Assert.Multiple(() =>
         {
-            Assert.That(id, Is.EqualTo("STEAM_1:0:56810715"));
-            Assert.That(instance, Is.EqualTo(1));
-            Assert.That(type, Is.EqualTo(1));
+            Assert.That(id, Is.EqualTo(expectedId));
+            Assert.That(instance, Is.EqualTo(expectedInstance));
+            Assert.That(type, Is.EqualTo(expectedT));
         });
     }
 
     [Test]
-    public void ToSteamID64_FromSteamID_ReturnsSteamID64()
+    [TestCase(0, 56810715, 76561198073887158)]
+    public void ToSteamID64_FromSteamID_ReturnsSteamID64(byte y, int z, long expected)
     {
-        // Arrange
-        const byte y = 0;
-        const int z = 56810715;
-
-        // Act
-        var id64 = SteamConverter.ToSteamID64(y, z);
-
-        // Assert
-        Assert.That(id64, Is.EqualTo(76561198073887158));
+        var result = SteamConverter.ToSteamID64(y, z);
+        Assert.That(result, Is.EqualTo(expected));
     }
 }
