@@ -51,7 +51,7 @@ public class SteamClientModel
         // There may be ghost directories here,
         // so throwing an exception, by 'throw exception if not found' parameter value,
         // will lead to inconsistent behavior.
-        var clients = rootObject.Properties.Enumerate("path").Select(path => FileSystemInfoExtensions.GetDirectoryInfo(false, path))
+        var clients = rootObject.Properties.Where(x => x.Key == "path").Select(path => FileSystemInfoExtensions.GetDirectoryInfo(false, path))
             .OfType<DirectoryInfo>().Select(directory => new SteamClientModel
             {
                 WorkingDirectory = directory,
