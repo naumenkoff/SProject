@@ -7,7 +7,6 @@ public sealed class ValveDataDocument
 {
     public required ValveDataCollection<ValveDataSection> Sections { get; init; }
     public required ValveDataCollection<ValveDataProperty> Properties { get; init; }
-
     public required ValveDataSection? PrimarySection { get; init; }
 
     [MemberNotNullWhen(true, nameof(PrimarySection))]

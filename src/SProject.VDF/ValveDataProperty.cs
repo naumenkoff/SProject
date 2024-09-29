@@ -1,16 +1,9 @@
 namespace SProject.VDF;
 
-public sealed class ValveDataProperty : IValveDataObject
+public sealed class ValveDataProperty(string key, string value) : IValveDataObject
 {
-    public ValveDataProperty(string key, string value)
-    {
-        Key = key;
-        Value = value;
-    }
-
-    public string Value { get; init; }
-
-    public string Key { get; init; }
+    public string Value { get; init; } = value;
+    public string Key { get; init; } = key;
 
     public static implicit operator string(ValveDataProperty property)
     {

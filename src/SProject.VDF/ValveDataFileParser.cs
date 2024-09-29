@@ -1,42 +1,45 @@
-using System.Buffers;
 using System.Runtime.CompilerServices;
 using System.Text;
 using SProject.VDF.Collections;
-using SProject.VDF.Extensions;
+using SProject.VDF.Parsing;
 
 namespace SProject.VDF;
 
 public static class ValveDataFileParser
 {
+    #region Settings
+
+    /// <summary>
+    ///     | BufferSize | Mean     | Median   | Gen0    | Gen1   | Allocated |
+    ///     |-----------:|---------:|---------:|--------:|-------:|----------:|
+    ///     | 1024       | 75.23 us | 74.76 us | 13.0615 | 2.5635 |  80.63 KB |
+    ///     | 2048       | 65.69 us | 65.70 us | 13.1836 | 3.1738 |  81.15 KB |
+    ///     | 4096       | 60.29 us | 60.20 us | 13.2446 | 2.6245 |  81.23 KB |
+    ///     | 8192       | 60.25 us | 59.91 us | 14.1602 | 2.8076 |  87.03 KB |
+    ///     | 16384      | 57.33 us | 57.19 us | 14.1602 | 2.8076 |  87.07 KB |
+    /// </summary>
+    private const int BufferSize = 4 * 1024;
+
+    private static readonly Encoding DefaultEncoding = Encoding.ASCII;
+
+    #endregion
+
+    #region Entry
+
     public static ValveDataDocument Parse(Span<byte> buffer)
     {
-        var properties = new ValveDataCollection<ValveDataProperty>();
-        var sections = new ValveDataCollection<ValveDataSection>();
-        return new ValveDataDocument
-        {
-            PrimarySection = Read(buffer, sections, properties),
-            Sections = sections,
-            Properties = properties
-        };
+        return Read(buffer);
     }
 
     public static ValveDataDocument Parse(Stream stream)
     {
-        var properties = new ValveDataCollection<ValveDataProperty>();
-        var sections = new ValveDataCollection<ValveDataSection>();
-        return new ValveDataDocument
-        {
-            PrimarySection = ReadStream(stream, sections, properties),
-            Sections = sections,
-            Properties = properties
-        };
+        return ReadStream(stream);
     }
 
     public static ValveDataDocument Parse(FileInfo fileInfo)
     {
-        var size = fileInfo.Length >= 4096 ? 4096 : fileInfo.Length;
-        using var stream = new FileStream(
-            fileInfo.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, (int)size, false);
+        using var stream = new FileStream(fileInfo.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, 0,
+                                          FileOptions.None);
         return Parse(stream);
     }
 
@@ -46,162 +49,67 @@ public static class ValveDataFileParser
         return Parse(fileInfo);
     }
 
-    private static ValveDataSection? ReadStream(Stream stream,
-        ValveDataCollection<ValveDataSection> sections,
-        ValveDataCollection<ValveDataProperty> properties)
+    #endregion
+
+    #region Core
+
+    private static ValveDataDocument ReadStream(Stream stream)
     {
+        var properties = new ValveDataCollection<ValveDataProperty>();
+        var sections = new ValveDataCollection<ValveDataSection>();
         var primarySection = new ValveDataSection(null!);
         var stack = new Stack<ValveDataSection>();
         stack.Push(primarySection);
 
-        const int bufferSize = 2048;
-
         var isEscaped = false;
-        var useLists = stream.Length >= bufferSize;
+        var storage = new PooledArray<byte>(stream.Length >= BufferSize ? BufferSize : (int)stream.Length);
+        var valueStart = -1;
         var keyStart = -1;
         var keyEnd = -1;
-        var valueStart = -1;
-        var position = ArrayPool<byte>.Shared.Rent(useLists ? bufferSize : (int)stream.Length);
-        if (useLists)
+
+        var index = 0;
+        var offset = 0;
+        while (stream.Position < stream.Length)
         {
-            var i = 0;
-            var offset = 0;
-            while (stream.Position < stream.Length)
+            for (var bytesRead = offset + stream.Read(storage.Array, offset, storage.Array.Length - offset);
+                 index < bytesRead;
+                 index++)
             {
-                var bytesRead = offset + stream.Read(position, offset, position.Length - offset);
-
-                var buffer = position.AsSpan();
-                for (; i < bytesRead; i++)
-                {
-                    var value = buffer[i];
-
-                    if (isEscaped)
-                    {
-                        isEscaped = value.IsBackslash();
-                        continue;
-                    }
-
-                    if (value.IsDoubleQuote())
-                    {
-                        if (keyStart == -1)
-                        {
-                            keyStart = i + 1;
-                            continue;
-                        }
-
-                        if (keyEnd == -1)
-                        {
-                            keyEnd = i;
-                            continue;
-                        }
-
-                        if (valueStart == -1)
-                        {
-                            valueStart = i + 1;
-                            continue;
-                        }
-
-                        var property = CreateProperty(buffer.Slice(keyStart, keyEnd - keyStart),
-                            buffer.Slice(valueStart, i - valueStart));
-
-                        stack.Peek().Add(property);
-                        properties.Add(property);
-
-                        keyStart = -1;
-                        keyEnd = -1;
-                        valueStart = -1;
-                        continue;
-                    }
-
-                    if (valueStart == -1)
-                    {
-                        if (value.IsOpeningCurlyBrace())
-                        {
-                            var childSection = CreateSection(buffer.Slice(keyStart, keyEnd - keyStart));
-                            stack.Peek().Add(childSection);
-                            stack.Push(childSection);
-                            sections.Add(childSection);
-                            keyStart = -1;
-                            keyEnd = -1;
-                            continue;
-                        }
-
-                        if (value.IsClosingCurlyBrace())
-                        {
-                            _ = stack.Pop();
-                            continue;
-                        }
-                    }
-
-                    isEscaped = value.IsBackslash();
-                }
-
-                if (keyStart == -1)
-                {
-                    i = 0;
-                    offset = 0;
-                }
-                else
-                {
-                    ArrayPool<byte>.Shared.Return(position);
-
-                    // 512 - 256 = 256
-                    offset = buffer.Length - keyStart;
-
-                    // 256 + 512
-                    position = ArrayPool<byte>.Shared.Rent(offset + bufferSize);
-
-                    // 256..512
-                    buffer.Slice(keyStart, offset).CopyTo(position);
-
-                    // keyEnd = 260 - 256 = 4
-                    if (keyEnd != -1) keyEnd -= keyStart;
-
-                    // valueStart = 280 - 256 = 24
-                    if (valueStart != -1) valueStart -= keyStart;
-
-                    i = offset;
-                    keyStart = 0;
-                }
-            }
-        }
-        else
-        {
-            // DRY Violation
-            var bytesRead = stream.Read(position, 0, position.Length);
-            var buffer = position.AsSpan();
-            for (var i = 0; i < bytesRead; i++)
-            {
-                var value = buffer[i];
+                var value = storage[index];
 
                 if (isEscaped)
                 {
+                    // Looking for non-escaped '{', '}', '"'.
                     isEscaped = value.IsBackslash();
                     continue;
                 }
 
                 if (value.IsDoubleQuote())
                 {
+                    // Key Start
                     if (keyStart == -1)
                     {
-                        keyStart = i + 1;
+                        keyStart = index + 1;
                         continue;
                     }
 
+                    // Key End
                     if (keyEnd == -1)
                     {
-                        keyEnd = i;
+                        keyEnd = index;
                         continue;
                     }
 
+                    // Value Start
                     if (valueStart == -1)
                     {
-                        valueStart = i + 1;
+                        valueStart = index + 1;
                         continue;
                     }
 
-                    var property = CreateProperty(buffer.Slice(keyStart, keyEnd - keyStart),
-                        buffer.Slice(valueStart, i - valueStart));
+                    // Value End
+                    var property = CreateProperty(storage.Span.Slice(keyStart, keyEnd - keyStart),
+                                                  storage.Span.Slice(valueStart, index - valueStart));
 
                     stack.Peek().Add(property);
                     properties.Add(property);
@@ -214,9 +122,10 @@ public static class ValveDataFileParser
 
                 if (valueStart == -1)
                 {
+                    // Section Start
                     if (value.IsOpeningCurlyBrace())
                     {
-                        var childSection = CreateSection(buffer.Slice(keyStart, keyEnd - keyStart));
+                        var childSection = CreateSection(storage.Span.Slice(keyStart, keyEnd - keyStart));
                         stack.Peek().Add(childSection);
                         stack.Push(childSection);
                         sections.Add(childSection);
@@ -225,6 +134,7 @@ public static class ValveDataFileParser
                         continue;
                     }
 
+                    // Section End
                     if (value.IsClosingCurlyBrace())
                     {
                         _ = stack.Pop();
@@ -234,59 +144,81 @@ public static class ValveDataFileParser
 
                 isEscaped = value.IsBackslash();
             }
+
+            if (keyStart == -1)
+            {
+                index = 0;
+                offset = 0;
+            }
+            else
+            {
+                storage.Resize(keyStart, offset);
+                if (keyEnd != -1) keyEnd -= keyStart;
+                if (valueStart != -1) valueStart -= keyStart;
+                index = offset;
+                keyStart = 0;
+            }
         }
 
-        ArrayPool<byte>.Shared.Return(position);
-        return primarySection.SingleOrDefault();
+        storage.Close();
+        return new ValveDataDocument
+        {
+            PrimarySection = primarySection.SingleOrDefault(),
+            Sections = sections,
+            Properties = properties
+        };
     }
 
-    private static ValveDataSection? Read(Span<byte> buffer,
-        ValveDataCollection<ValveDataSection> sections,
-        ValveDataCollection<ValveDataProperty> properties)
+    private static ValveDataDocument Read(ReadOnlySpan<byte> span)
     {
-        var keyStart = -1;
-        var keyEnd = -1;
-
-        var valueStart = -1;
-
+        var properties = new ValveDataCollection<ValveDataProperty>();
+        var sections = new ValveDataCollection<ValveDataSection>();
         var primarySection = new ValveDataSection(null!);
         var stack = new Stack<ValveDataSection>();
         stack.Push(primarySection);
 
         var isEscaped = false;
-        for (var i = 0; i < buffer.Length; i++)
+        var valueStart = -1;
+        var keyStart = -1;
+        var keyEnd = -1;
+
+        for (var i = 0; i < span.Length; i++)
         {
-            var value = buffer[i];
+            var value = span[i];
 
             if (isEscaped)
             {
+                // Looking for non-escaped '{', '}', '"'.
                 isEscaped = value.IsBackslash();
                 continue;
             }
 
             if (value.IsDoubleQuote())
             {
+                // Key Start
                 if (keyStart == -1)
                 {
                     keyStart = i + 1;
                     continue;
                 }
 
+                // Key End
                 if (keyEnd == -1)
                 {
                     keyEnd = i;
                     continue;
                 }
 
+                // Value Start
                 if (valueStart == -1)
                 {
                     valueStart = i + 1;
                     continue;
                 }
 
-                var property = new ValveDataProperty(
-                    Encoding.ASCII.GetString(buffer.Slice(keyStart, keyEnd - keyStart)),
-                    Encoding.ASCII.GetString(buffer.Slice(valueStart, i - valueStart)));
+                // Value End
+                var property = CreateProperty(span.Slice(keyStart, keyEnd - keyStart),
+                                              span.Slice(valueStart, i - valueStart));
 
                 stack.Peek().Add(property);
                 properties.Add(property);
@@ -299,9 +231,10 @@ public static class ValveDataFileParser
 
             if (valueStart == -1)
             {
+                // Section Start
                 if (value.IsOpeningCurlyBrace())
                 {
-                    var childSection = CreateSection(buffer.Slice(keyStart, keyEnd - keyStart));
+                    var childSection = CreateSection(span.Slice(keyStart, keyEnd - keyStart));
                     stack.Peek().Add(childSection);
                     stack.Push(childSection);
                     sections.Add(childSection);
@@ -310,6 +243,7 @@ public static class ValveDataFileParser
                     continue;
                 }
 
+                // Section End
                 if (value.IsClosingCurlyBrace())
                 {
                     _ = stack.Pop();
@@ -320,21 +254,32 @@ public static class ValveDataFileParser
             isEscaped = value.IsBackslash();
         }
 
-        return primarySection.SingleOrDefault();
+        return new ValveDataDocument
+        {
+            PrimarySection = primarySection.SingleOrDefault(),
+            Sections = sections,
+            Properties = properties
+        };
     }
 
+    #endregion
+
+    #region Utilities
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static ValveDataSection CreateSection(Span<byte> keyBytes)
+    private static ValveDataSection CreateSection(ReadOnlySpan<byte> keyBytes)
     {
-        var key = Encoding.ASCII.GetString(keyBytes);
+        var key = DefaultEncoding.GetString(keyBytes);
         return new ValveDataSection(key);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static ValveDataProperty CreateProperty(Span<byte> keyBytes, Span<byte> valueBytes)
+    private static ValveDataProperty CreateProperty(ReadOnlySpan<byte> keyBytes, ReadOnlySpan<byte> valueBytes)
     {
-        var key = Encoding.ASCII.GetString(keyBytes);
-        var value = valueBytes.Length == 0 ? string.Empty : Encoding.ASCII.GetString(valueBytes);
+        var key = DefaultEncoding.GetString(keyBytes);
+        var value = valueBytes.Length > 0 ? DefaultEncoding.GetString(valueBytes) : string.Empty;
         return new ValveDataProperty(key, value);
     }
+
+    #endregion
 }

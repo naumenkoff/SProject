@@ -3,21 +3,16 @@ using SProject.VDF.Collections;
 
 namespace SProject.VDF;
 
-public sealed class ValveDataSection : IValveDataObject, IEnumerable<ValveDataSection>
+public sealed class ValveDataSection(string key) : IValveDataObject, IEnumerable<ValveDataSection>
 {
     private ValveDataCollection<ValveDataProperty>? _properties;
     private ValveDataCollection<ValveDataSection>? _sections;
 
-    public ValveDataSection(string key)
-    {
-        Key = key;
-    }
+    public ValveDataCollection<ValveDataSection> Sections =>
+        _sections ?? ValveDataCollection<ValveDataSection>.Empty;
 
-    public ValveDataEnumerable<ValveDataProperty> Properties =>
-        _properties ?? ValveDataEnumerable<ValveDataProperty>.Empty;
-
-    public ValveDataEnumerable<ValveDataSection> Sections =>
-        _sections ?? ValveDataEnumerable<ValveDataSection>.Empty;
+    public ValveDataCollection<ValveDataProperty> Properties =>
+        _properties ?? ValveDataCollection<ValveDataProperty>.Empty;
 
     public ValveDataSection? this[string key] => Sections[key];
 
@@ -31,23 +26,17 @@ public sealed class ValveDataSection : IValveDataObject, IEnumerable<ValveDataSe
         return GetEnumerator();
     }
 
-    public string Key { get; init; }
+    public string Key { get; init; } = key;
 
-    public void Add<T>(T item) where T : IValveDataObject
+    public void Add(ValveDataSection valveDataSection)
     {
-        switch (item)
-        {
-            case ValveDataSection section:
-                _sections ??= new ValveDataCollection<ValveDataSection>();
-                _sections.Add(section);
-                break;
-            case ValveDataProperty property:
-                _properties ??= new ValveDataCollection<ValveDataProperty>();
-                _properties.Add(property);
-                break;
-            default:
-                throw new InvalidOperationException(
-                    $"'{nameof(Add)}<{typeof(T).Name}>' doesn't support adding objects of type '{typeof(T)}'.");
-        }
+        _sections ??= [];
+        _sections.Add(valveDataSection);
+    }
+
+    public void Add(ValveDataProperty valveDataProperty)
+    {
+        _properties ??= [];
+        _properties.Add(valveDataProperty);
     }
 }

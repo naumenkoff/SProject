@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace SProject.VDF.Extensions;
+namespace SProject.VDF.Parsing;
 
 internal static class ByteExtensions
 {
