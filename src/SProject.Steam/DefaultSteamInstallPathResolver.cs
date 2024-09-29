@@ -1,7 +1,11 @@
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.Versioning;
 using Microsoft.Win32;
 
 namespace SProject.Steam;
 
+[ExcludeFromCodeCoverage]
+[SupportedOSPlatform("windows")]
 internal class DefaultSteamInstallPathResolver : ISteamInstallPathResolver<SteamPathNode>
 {
     public string? GetInstallPath(SteamPathNode node)
