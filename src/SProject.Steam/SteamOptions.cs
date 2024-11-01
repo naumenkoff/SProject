@@ -8,7 +8,7 @@ namespace SProject.Steam;
 [SupportedOSPlatform("windows")]
 public class SteamOptions
 {
-    public List<SteamPathNode> SteamPathNodes { get; init; } = [];
+    public List<SteamPathNode> SteamPathNodes { get; set; } = [];
 
     public static SteamOptions Default => new()
     {
