@@ -1,1 +1,3 @@
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SProject.Steam.Tests")]
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("SProject.Steam.Tests")]

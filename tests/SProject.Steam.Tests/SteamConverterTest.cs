@@ -2,7 +2,7 @@ namespace SProject.Steam.Tests;
 
 [TestFixture]
 [TestOf(typeof(SteamConverter))]
-public class SteamConverterTest
+public sealed class SteamConverterTest
 {
     [Test]
     [TestCase(113621430u, 76561198073887158)]
@@ -28,7 +28,6 @@ public class SteamConverterTest
         Assert.That(result, Is.EqualTo(expected));
     }
 
-    [Test]
     [TestCase(113621430u, "[U:1:113621430]")]
     public void ToSteamID3_FromSteamID32_ReturnsSteamID3(uint value, string expected)
     {
@@ -36,7 +35,6 @@ public class SteamConverterTest
         Assert.That(result, Is.EqualTo(expected));
     }
 
-    [Test]
     [TestCase(76561198073887158, "STEAM_1:0:56810715", 1, 1)]
     public void ToSteamID_FromSteamID64_ReturnsSteamID(long id64, string expectedId, int expectedInstance, int expectedT)
     {
@@ -49,7 +47,6 @@ public class SteamConverterTest
         });
     }
 
-    [Test]
     [TestCase(0, 56810715, 76561198073887158)]
     public void ToSteamID64_FromSteamID_ReturnsSteamID64(byte y, int z, long expected)
     {

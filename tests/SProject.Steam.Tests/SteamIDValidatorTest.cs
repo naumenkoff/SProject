@@ -2,7 +2,7 @@ namespace SProject.Steam.Tests;
 
 [TestFixture]
 [TestOf(typeof(SteamIDValidator))]
-public class SteamIDValidatorTest
+public sealed class SteamIDValidatorTest
 {
     [Test]
     [TestCase("76561198073887158")]

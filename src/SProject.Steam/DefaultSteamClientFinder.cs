@@ -1,36 +1,37 @@
-﻿using Microsoft.Extensions.Options;
-using SProject.FileSystem;
+﻿using System.Runtime.Versioning;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using SProject.Steam.Abstractions;
 
 namespace SProject.Steam;
 
-public sealed class DefaultSteamClientFinder : ISteamClientFinder
+[SupportedOSPlatform("windows")]
+public sealed class DefaultSteamClientFinder(
+    IOptions<SteamOptions> steamOptions,
+    ISteamInstallPathResolver<SteamPathNode> steamInstallPathResolver,
+    ILogger<DefaultSteamClientFinder> logger) : ISteamClientFinder
 {
-    private readonly ISteamInstallPathResolver<SteamPathNode> _steamInstallPathResolver;
-    private readonly SteamOptions _steamOptions;
-
-    public DefaultSteamClientFinder(IOptions<SteamOptions> steamOptions,
-                                    ISteamInstallPathResolver<SteamPathNode> steamInstallPathResolver)
+    public IEnumerable<SteamClientModel> FindSteamClients()
     {
-        _steamInstallPathResolver = steamInstallPathResolver;
-        _steamOptions = steamOptions.Value;
-    }
-
-    public SteamClientModel? FindSteamClient()
-    {
-        foreach (var node in _steamOptions.SteamPathNodes)
+        foreach (var steamPathNode in steamOptions.Value.SteamPathNodes)
         {
-            var installPath = _steamInstallPathResolver.GetInstallPath(node);
-            var directoryInfo = FileSystemInfoExtensions.GetDirectoryInfo(false, installPath);
-            if (directoryInfo is not null)
-                return new SteamClientModel
-                {
-                    WorkingDirectory = directoryInfo,
-                    IsRootDirectory = true
-                };
-        }
+            var installPath = steamInstallPathResolver.Resolve(steamPathNode);
+            if (string.IsNullOrEmpty(installPath))
+            {
+                logger.LogTrace("SteamNode[{Hive}][{Node}][{Name}]: Unresolved[{Path}]",
+                                steamPathNode.PathHive, steamPathNode.Path, steamPathNode.Name, installPath);
+                continue;
+            }
 
-        return _steamOptions.ThrowOnAbsence
-            ? throw new DirectoryNotFoundException("Steam Client directory not found")
-            : null;
+            var directoryInfo = new DirectoryInfo(installPath);
+            if (!directoryInfo.Exists)
+            {
+                logger.LogTrace("SteamNode[{Hive}][{Node}][{Name}]: Fake[{Path}]",
+                                steamPathNode.PathHive, steamPathNode.Path, steamPathNode.Name, directoryInfo.FullName);
+                continue;
+            }
+
+            yield return new SteamClientModel(directoryInfo, true);
+        }
     }
 }

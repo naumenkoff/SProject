@@ -1,5 +1,3 @@
-using System.Runtime.CompilerServices;
-
 namespace SProject.TestHelper;
 
 public static class FileSystemInfoCreator
@@ -8,11 +6,11 @@ public static class FileSystemInfoCreator
     {
         var tempFile = Path.Combine(tempDirectory.FullName, Path.GetRandomFileName());
         var file = new FileInfo(tempFile);
-        using var _ = file.Create();
+        file.Create().Dispose();
         return file;
     }
 
-    public static DirectoryInfo CreateDirectory([CallerMemberName] string name = nameof(FileSystemInfoCreator))
+    public static DirectoryInfo CreateDirectory(string name)
     {
         var tempDirectory = Path.Combine(Path.GetTempPath(), name);
         var directoryInfo = new DirectoryInfo(tempDirectory);

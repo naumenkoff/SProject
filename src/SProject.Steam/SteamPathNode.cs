@@ -1,7 +1,9 @@
-﻿using Microsoft.Win32;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.Win32;
 
 namespace SProject.Steam;
 
+[ExcludeFromCodeCoverage]
 public class SteamPathNode
 {
     /// <summary>

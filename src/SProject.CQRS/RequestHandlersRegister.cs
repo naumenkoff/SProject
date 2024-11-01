@@ -12,16 +12,13 @@ public static class RequestHandlersRegister
     {
         serviceCollection.TryAddSingleton<IRequestResolver, RequestResolver>();
 
-        foreach (var someClass in AppDomain.CurrentDomain
-                                      .GetAssemblies()
-                                      .SelectMany(x => x.GetTypes())
-                                      .Where(t => t.IsClass))
-        foreach (var someClassInterface in someClass.GetInterfaces().Where(x => x.IsGenericType))
-        {
-            var definition = someClassInterface.GetGenericTypeDefinition();
-            if (definition == typeof(IRequestHandler<>) || definition == typeof(IRequestHandler<,>))
-                serviceCollection.TryAddTransient(someClassInterface, someClass);
-        }
+        foreach (var implementationType in AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetTypes()).Where(t => t.IsClass))
+        foreach (var serviceType in from @interface in implementationType.GetInterfaces()
+                                    where @interface.IsGenericType
+                                    let genericType = @interface.GetGenericTypeDefinition()
+                                    where genericType == typeof(IRequestHandler<>) || genericType == typeof(IRequestHandler<,>)
+                                    select @interface)
+            serviceCollection.TryAddTransient(serviceType, implementationType);
 
         return serviceCollection;
     }

@@ -1,17 +1,17 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace SProject.DependencyInjection;
+namespace SProject.DependencyInjection.Abstractions;
 
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
-public interface IServiceScope<out T> : IDisposable where T : class
+public interface IServiceScope<out T> : IDisposable where T : class?
 {
-    T GetRequiredService();
+    IServiceWrapper<T> GetRequiredService();
 
-    T GetRequiredKeyedService(object? serviceKey);
+    IServiceWrapper<T> GetRequiredKeyedService(object? serviceKey);
 
-    T? GetService();
+    IServiceWrapper<T?> GetService();
 
-    T? GetKeyedService(object? serviceKey);
+    IServiceWrapper<T?> GetKeyedService(object? serviceKey);
 
-    IEnumerable<T> GetServices();
+    IEnumerable<IServiceWrapper<T>> GetServices();
 }

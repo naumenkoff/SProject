@@ -1,86 +1,102 @@
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Win32;
 using Moq;
-using SProject.TestHelper;
+using SProject.Steam.Abstractions;
 
 namespace SProject.Steam.Tests;
 
 [TestFixture]
+[Platform("Win")]
 [TestOf(typeof(DefaultSteamClientFinder))]
-public class DefaultSteamClientFinderTest
+public sealed class DefaultSteamClientFinderTest
 {
-    private static OptionsWrapper<SteamOptions> CreateSteamOptions(bool throwOnAbsence)
+    private static readonly SteamPathNode SomeNode = new()
     {
-        var options = new SteamOptions
-        {
-            ThrowOnAbsence = throwOnAbsence,
-            SteamPathNodes =
-            [
-                new SteamPathNode()
-                {
-                    Name = "SteamPath",
-                    Path = @"Software\Valve\Steam",
-                    PathHive = RegistryHive.CurrentUser
-                }
-            ]
-        };
-        return new OptionsWrapper<SteamOptions>(options);
-    }
+        Name = "Name",
+        Path = "Path",
+        PathHive = RegistryHive.ClassesRoot
+    };
 
     [Test]
-    public void FindSteamClient_WhenCorrectRegistryPath_ReturnsValidDirectory()
+    public void FindSteamClients_ReturnEmptyEnumerable_WhenEmptyOptions()
     {
         // Arrange
-        var existsDirectory = FileSystemInfoCreator.CreateDirectory();
-        var options = CreateSteamOptions(false);
-        var mockResolver = new Mock<ISteamInstallPathResolver<SteamPathNode>>();
-        mockResolver.Setup(x => x.GetInstallPath(options.Value.SteamPathNodes[0])).Returns(existsDirectory.FullName);
-        var steamClientFinder = new DefaultSteamClientFinder(options, mockResolver.Object);
+        var steamOptions = new SteamOptions();
+        var steamOptionsWrapper = new OptionsWrapper<SteamOptions>(steamOptions);
+        var mock = new Mock<ISteamInstallPathResolver<SteamPathNode>>(MockBehavior.Strict);
+        var steamClientFinder = new DefaultSteamClientFinder(steamOptionsWrapper, mock.Object, NullLogger<DefaultSteamClientFinder>.Instance);
 
         // Act
-        var directory = steamClientFinder.FindSteamClient();
+        var steamClients = steamClientFinder.FindSteamClients().ToArray();
 
         // Assert
-        Assert.That(directory, Is.Not.Null);
         Assert.Multiple(() =>
         {
-            Assert.That(directory.WorkingDirectory, Is.Not.Null);
-            Assert.That(directory.WorkingDirectory.FullName, Is.EqualTo(existsDirectory.FullName));
-            Assert.That(directory.IsRootDirectory, Is.True);
+            Assert.That(mock.Invocations, Is.Empty);
+            Assert.That(steamClients, Is.Empty);
         });
-
-        // Cleanup
-        existsDirectory.Delete(true);
     }
 
     [Test]
-    public void FindSteamClient_WhenDirectoryNotFound_ReturnsNull()
+    public void FindSteamClients_ReturnsEmpty_WhenPathResolverReturnsNull()
     {
         // Arrange
-        var options = CreateSteamOptions(false);
-        var mockResolver = new Mock<ISteamInstallPathResolver<SteamPathNode>>();
-        mockResolver.Setup(x => x.GetInstallPath(options.Value.SteamPathNodes[0])).Returns(default(string));
-        var steamClientFinder = new DefaultSteamClientFinder(options, mockResolver.Object);
+        var steamOptions = new SteamOptions { SteamPathNodes = [SomeNode] };
+        var steamOptionsWrapper = new OptionsWrapper<SteamOptions>(steamOptions);
+        var mock = new Mock<ISteamInstallPathResolver<SteamPathNode>>(MockBehavior.Loose);
+        var steamClientFinder = new DefaultSteamClientFinder(steamOptionsWrapper, mock.Object, NullLogger<DefaultSteamClientFinder>.Instance);
 
         // Act
-        var steamClient = steamClientFinder.FindSteamClient();
+        var steamClients = steamClientFinder.FindSteamClients().ToArray();
 
         // Assert
-        Assert.That(steamClient, Is.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(mock.Invocations, Has.One.Items);
+            Assert.That(steamClients, Is.Empty);
+        });
     }
 
-    [TestCase(true, typeof(DirectoryNotFoundException))]
-    public void FindSteamClient_WithInvalidBehavior_ThrowsException(bool throwOnAbsence, Type exceptionType)
+    [Test]
+    public void FindSteamClients_ReturnsEmpty_WhenDirectoryNotExist()
     {
         // Arrange
-        var options = CreateSteamOptions(throwOnAbsence);
+        var steamOptions = new SteamOptions { SteamPathNodes = [SomeNode] };
+        var steamOptionsWrapper = new OptionsWrapper<SteamOptions>(steamOptions);
+        var mock = new Mock<ISteamInstallPathResolver<SteamPathNode>>();
+        mock.Setup(x => x.Resolve(It.IsAny<SteamPathNode>())).Returns(Path.GetRandomFileName);
+        var steamClientFinder = new DefaultSteamClientFinder(steamOptionsWrapper, mock.Object, NullLogger<DefaultSteamClientFinder>.Instance);
 
-        var mockResolver = new Mock<ISteamInstallPathResolver<SteamPathNode>>();
-        mockResolver.Setup(x => x.GetInstallPath(options.Value.SteamPathNodes[0])).Returns(default(string));
+        // Act
+        var steamClients = steamClientFinder.FindSteamClients().ToArray();
 
-        var steamClientFinder = new DefaultSteamClientFinder(options, mockResolver.Object);
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(mock.Invocations, Has.One.Items);
+            Assert.That(steamClients, Is.Empty);
+        });
+    }
 
-        // Act & Assert
-        Assert.Throws(exceptionType, () => steamClientFinder.FindSteamClient());
+    [Test]
+    public void FindSteamClients_ReturnsSteamClientModel_WhenDirectoryExist()
+    {
+        // Arrange
+        var steamOptions = new SteamOptions { SteamPathNodes = [SomeNode] };
+        var steamOptionsWrapper = new OptionsWrapper<SteamOptions>(steamOptions);
+        var mock = new Mock<ISteamInstallPathResolver<SteamPathNode>>();
+        mock.Setup(x => x.Resolve(It.IsAny<SteamPathNode>())).Returns(Path.GetTempPath);
+        var steamClientFinder = new DefaultSteamClientFinder(steamOptionsWrapper, mock.Object, NullLogger<DefaultSteamClientFinder>.Instance);
+
+        // Act
+        var steamClients = steamClientFinder.FindSteamClients().ToArray();
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(steamClients, Has.One.Items);
+            Assert.That(steamClients, Has.All.Matches<SteamClientModel>(client => client.WorkingDirectory.FullName == Path.GetTempPath()));
+        });
     }
 }

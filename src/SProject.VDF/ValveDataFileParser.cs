@@ -7,7 +7,7 @@ namespace SProject.VDF;
 
 public static class ValveDataFileParser
 {
-    #region Settings
+#region Settings
 
     /// <summary>
     ///     | BufferSize | Mean     | Median   | Gen0    | Gen1   | Allocated |
@@ -22,9 +22,9 @@ public static class ValveDataFileParser
 
     private static readonly Encoding DefaultEncoding = Encoding.ASCII;
 
-    #endregion
+#endregion
 
-    #region Entry
+#region Entry
 
     public static ValveDataDocument Parse(Span<byte> buffer)
     {
@@ -49,9 +49,9 @@ public static class ValveDataFileParser
         return Parse(fileInfo);
     }
 
-    #endregion
+#endregion
 
-    #region Core
+#region Core
 
     private static ValveDataDocument ReadStream(Stream stream)
     {
@@ -262,9 +262,9 @@ public static class ValveDataFileParser
         };
     }
 
-    #endregion
+#endregion
 
-    #region Utilities
+#region Utilities
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static ValveDataSection CreateSection(ReadOnlySpan<byte> keyBytes)
@@ -281,5 +281,5 @@ public static class ValveDataFileParser
         return new ValveDataProperty(key, value);
     }
 
-    #endregion
+#endregion
 }

@@ -5,10 +5,10 @@ namespace SProject.Math.Tests;
 public class ByteUnitConverterTest
 {
     [Test]
-    public void MegabytesToBytes_ReturnsBytes()
+    public void MebibytesToBytes_ShouldReturnBytes()
     {
         // Arrange & Act
-        var bytes = ByteUnitConverter.MegabytesToBytes(4);
+        var bytes = ByteUnitConverter.MebibytesToBytes(4);
 
         // Assert
         Assert.That(bytes, Is.EqualTo(4_194_304));

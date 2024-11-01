@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace SProject.DependencyInjection;
+namespace SProject.DependencyInjection.Abstractions;
 
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
 public interface IServiceScopeFactory<out T> where T : class

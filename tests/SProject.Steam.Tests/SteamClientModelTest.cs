@@ -2,17 +2,13 @@ namespace SProject.Steam.Tests;
 
 [TestFixture]
 [TestOf(typeof(SteamClientModel))]
-public class SteamClientModelTest
+public sealed class SteamClientModelTest
 {
     [OneTimeSetUp]
     public void Setup()
     {
         _directoryInfo = new DirectoryInfo("fake");
-        _steamClientModel = new SteamClientModel
-        {
-            IsRootDirectory = true,
-            WorkingDirectory = _directoryInfo
-        };
+        _steamClientModel = new SteamClientModel(_directoryInfo, true);
     }
 
     private SteamClientModel _steamClientModel = null!;

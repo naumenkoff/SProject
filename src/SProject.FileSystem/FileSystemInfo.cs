@@ -2,81 +2,61 @@
 
 namespace SProject.FileSystem;
 
-/// <summary>
-///     Provides utility methods for creating instances of <see cref="System.IO.FileSystemInfo" /> types.
-/// </summary>
+[SuppressMessage("ReSharper", "UnusedType.Global")]
+[SuppressMessage("ReSharper", "UnusedMember.Global")]
 public static class FileSystemInfoExtensions
 {
-    /// <summary>
-    ///     Gets a <see cref="System.IO.FileInfo" /> instance for the specified path.
-    /// </summary>
-    /// <param name="throwException">Specifies whether to throw an exception on error. If false, returns null on error.</param>
-    /// <param name="paths">The paths to combine into a single path.</param>
-    /// <returns>
-    ///     A <see cref="System.IO.FileInfo" /> instance
-    ///     or
-    ///     null if not found or <paramref name="throwException" /> is false.
-    /// </returns>
-    public static FileInfo? GetFileInfo(bool throwException, params string?[] paths)
+    public static FileInfo GetFile(this FileSystemInfo fileSystemInfo, params string[] paths)
     {
-        var fileSystemInfo = Create<FileInfo>(throwException, paths);
-        return fileSystemInfo.Exists() ? (FileInfo) fileSystemInfo : default;
+        return (FileInfo)Create<FileInfo>(fileSystemInfo.FullName, paths);
     }
 
-    /// <summary>
-    ///     Gets a <see cref="System.IO.DirectoryInfo" /> instance for the specified path.
-    /// </summary>
-    /// <param name="throwException">Specifies whether to throw an exception on error. If false, returns null on error.</param>
-    /// <param name="paths">The paths to combine into a single path.</param>
-    /// <returns>
-    ///     A <see cref="System.IO.DirectoryInfo" /> instance
-    ///     or
-    ///     null if not found or <paramref name="throwException" /> is false.
-    /// </returns>
-    public static DirectoryInfo? GetDirectoryInfo(bool throwException, params string?[] paths)
+    public static DirectoryInfo GetDirectory(this FileSystemInfo fileSystemInfo, params string[] paths)
     {
-        var fileSystemInfo = Create<DirectoryInfo>(throwException, paths);
-        return fileSystemInfo.Exists() ? (DirectoryInfo) fileSystemInfo : default;
+        return (DirectoryInfo)Create<DirectoryInfo>(fileSystemInfo.FullName, paths);
     }
 
-    /// <summary>
-    ///     Creates a <see cref="System.IO.FileSystemInfo" /> instance for the specified path and type.
-    /// </summary>
-    /// <param name="throwException">Specifies whether to throw an exception on error. If false, returns null on error.</param>
-    /// <param name="paths">The paths to combine into a single path.</param>
-    /// <typeparam name="T">The type of <see cref="System.IO.FileSystemInfo" /> to create.</typeparam>
-    /// <returns>
-    ///     A <see cref="System.IO.FileSystemInfo" /> instance
-    ///     or
-    ///     null if not found or <paramref name="throwException" /> is false.
-    /// </returns>
-    /// <exception cref="ArgumentException">Thrown if an unsupported <typeparamref name="T" /> is provided.</exception>
-    public static FileSystemInfo? Create<T>(bool throwException, params string?[] paths) where T : FileSystemInfo
+    public static FileInfo GetFile(params string[] paths)
     {
-        try
-        {
-            // Path.Combine checks for null in the whole collection and each element.
-            var path = Path.Combine(paths!);
-
-            // To prevent single 'string.empty' in 'paths'
-            if (typeof(T) == typeof(FileInfo)) return new FileInfo(path);
-            if (typeof(T) == typeof(DirectoryInfo)) return new DirectoryInfo(path);
-            throw new ArgumentException("Unsupported FileSystemInfo type", typeof(T).Name);
-        }
-        catch (Exception)
-        {
-            if (throwException) throw;
-            return default;
-        }
+        return (FileInfo)Create<FileInfo>(paths);
     }
 
-    /// <summary>
-    ///     Checks if the <see cref="System.IO.FileSystemInfo" /> instance exists.
-    /// </summary>
-    /// <param name="fileSystemInfo">The <see cref="System.IO.FileSystemInfo" /> instance to check.</param>
-    /// <returns>True if the instance is not null and exists, otherwise false.</returns>
+    public static DirectoryInfo GetDirectory(params string[] paths)
+    {
+        return (DirectoryInfo)Create<DirectoryInfo>(paths);
+    }
+
+    public static bool HasSubdirectory(this DirectoryInfo directoryInfo, string name)
+    {
+        return directoryInfo.GetDirectory(name).Exists();
+    }
+
     public static bool Exists([NotNullWhen(true)] this FileSystemInfo? fileSystemInfo)
     {
         return fileSystemInfo is { Exists: true };
+    }
+
+    public static bool NotExists([NotNullWhen(false)] this FileSystemInfo? fileSystemInfo)
+    {
+        return fileSystemInfo is not { Exists: true };
+    }
+
+    public static FileSystemInfo Create<T>(string[] paths) where T : FileSystemInfo
+    {
+        var path = Path.Combine(paths);
+        return typeof(T) switch
+        {
+            var type when type == typeof(FileInfo) => (new FileInfo(path) as T)!,
+            var type when type == typeof(DirectoryInfo) => (new DirectoryInfo(path) as T)!,
+            _ => throw new ArgumentException($"Unsupported FileSystemInfo type: {typeof(T).Name}")
+        };
+    }
+
+    public static FileSystemInfo Create<T>(string initialPath, string[] source) where T : FileSystemInfo
+    {
+        var destination = new string[source.Length + 1];
+        destination[0] = initialPath;
+        source.CopyTo(destination, 1);
+        return Create<T>(destination);
     }
 }

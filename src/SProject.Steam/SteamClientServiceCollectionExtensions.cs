@@ -1,10 +1,13 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Runtime.Versioning;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using SProject.Steam.Abstractions;
 
 namespace SProject.Steam;
 
 public static class SteamClientServiceCollectionExtensions
 {
+    [SupportedOSPlatform("windows")]
     public static IServiceCollection AddSteamClient(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);

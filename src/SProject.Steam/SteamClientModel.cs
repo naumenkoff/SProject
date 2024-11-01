@@ -1,66 +1,129 @@
-﻿using SProject.FileSystem;
+﻿using System.Collections.Immutable;
+using SProject.FileSystem;
 using SProject.VDF;
+using SProject.VDF.Extensions;
 
 namespace SProject.Steam;
 
 public class SteamClientModel
 {
-    private IEnumerable<SteamClientModel>? _steamClientModels;
-    public required bool IsRootDirectory { get; init; }
-    public required DirectoryInfo WorkingDirectory { get; init; }
-
-    public DirectoryInfo? GetUserdataDirectory(bool throwExceptionIfNotFound = false)
+    public SteamClientModel(DirectoryInfo workingDirectory, bool isRootDirectory)
     {
-        return FileSystemInfoExtensions.GetDirectoryInfo(throwExceptionIfNotFound, WorkingDirectory.FullName, "userdata");
+        WorkingDirectory = workingDirectory;
+        IsRootDirectory = isRootDirectory;
+        InstalledApplications = GetInstalledApplications().ToImmutableList();
     }
 
-    public DirectoryInfo? GetConfigDirectory(bool throwExceptionIfNotFound = false)
+    private SteamClientModel(DirectoryInfo workingDirectory, bool isRootDirectory, IEnumerable<InstalledApplication> gameLibraryApplications)
     {
-        return FileSystemInfoExtensions.GetDirectoryInfo(throwExceptionIfNotFound, WorkingDirectory.FullName, "config");
+        WorkingDirectory = workingDirectory;
+        IsRootDirectory = isRootDirectory;
+        InstalledApplications = CombineInstalledApplications(gameLibraryApplications);
     }
 
-    public DirectoryInfo? GetSteamappsDirectory(bool throwExceptionIfNotFound = false)
-    {
-        return FileSystemInfoExtensions.GetDirectoryInfo(throwExceptionIfNotFound, WorkingDirectory.FullName, "steamapps");
-    }
+    public ImmutableList<InstalledApplication> InstalledApplications { get; }
+    public bool IsRootDirectory { get; }
+    public DirectoryInfo WorkingDirectory { get; }
 
-    public IEnumerable<SteamClientModel> GetSteamLibraries(bool throwExceptionIfNotFound = false, bool force = false)
+    private ImmutableList<InstalledApplication> CombineInstalledApplications(IEnumerable<InstalledApplication> gameLibraryApplications)
     {
-        if (force)
+        var installedApplications = new List<InstalledApplication>();
+        foreach (var installedApplication in gameLibraryApplications.Concat(GetInstalledApplications()))
         {
-            // Force - we want to get a fresh list of Steam libraries.
-            // As a result, the method is not thread-safe.
-            _steamClientModels = null;
-        }
-        else
-        {
-            // Otherwise, if we have already been called at least once,
-            // we can return the cached result.
-            if (_steamClientModels is not null) return _steamClientModels;
+            var index = installedApplications.FindIndex(x => x.AppId == installedApplication.AppId);
+            if (index == -1) installedApplications.Add(installedApplication);
+            else installedApplications[index] = InstalledApplication.Combine(installedApplication, installedApplications[index]);
         }
 
-        var steamapps = GetSteamappsDirectory(throwExceptionIfNotFound);
-        if (steamapps is null) return _steamClientModels = Enumerable.Empty<SteamClientModel>();
+        return installedApplications.ToImmutableList();
+    }
 
-        var libraryfolders = FileSystemInfoExtensions.GetFileInfo(throwExceptionIfNotFound, steamapps.FullName, "libraryfolders.vdf");
-        if (libraryfolders is null) return _steamClientModels = Enumerable.Empty<SteamClientModel>();
+    public DirectoryInfo GetUserdataDirectory()
+    {
+        return WorkingDirectory.GetDirectory("userdata");
+    }
 
-        var rootObject = ValveDataFileParser.Parse(libraryfolders);
-        if (!rootObject.HasProperties) return _steamClientModels = Enumerable.Empty<SteamClientModel>();
+    public DirectoryInfo GetConfigDirectory()
+    {
+        return WorkingDirectory.GetDirectory("config");
+    }
 
-        // There may be ghost directories here,
-        // so throwing an exception, by 'throw exception if not found' parameter value,
-        // will lead to inconsistent behavior.
-        var clients = rootObject.Properties
-                                .Where(x => x.Key == "path")
-                                .Select(path => FileSystemInfoExtensions.GetDirectoryInfo(false, path))
-                                .OfType<DirectoryInfo>().Select(directory => new SteamClientModel
-                                {
-                                    WorkingDirectory = directory,
-                                    IsRootDirectory = IsRootDirectory && directory.FullName == WorkingDirectory.FullName
-                                }).ToList();
+    public DirectoryInfo GetSteamappsDirectory()
+    {
+        return WorkingDirectory.GetDirectory("steamapps");
+    }
 
-        if (throwExceptionIfNotFound && clients.Count == 0) throw new NotImplementedException();
-        return _steamClientModels = clients;
+    public IEnumerable<InstalledApplication> GetInstalledApplications()
+    {
+        var steamapps = GetSteamappsDirectory();
+        if (steamapps.NotExists()) yield break;
+
+        foreach (var appmanifest in steamapps.EnumerateFiles("appmanifest_*.acf", SearchOption.TopDirectoryOnly))
+        {
+            var valveDataDocument = ValveDataFileParser.Parse(appmanifest);
+            if (!valveDataDocument.HasProperties) yield break;
+
+            var appState = valveDataDocument.PrimarySection.Properties;
+            var installDir = appState["installdir"]?.Value;
+            yield return new InstalledApplication
+            {
+                AppId = appState["appid"].AsInt32().GetValueOrDefault(),
+                LastPlayed = appState["LastPlayed"].AsDateTimeOffset().GetValueOrDefault(),
+                Name = appState["name"]?.Value,
+                LastOwner = appState["LastOwner"].AsInt64().GetValueOrDefault(),
+                FromGameLibrary = false,
+                FromAppmanifest = true,
+                InstallDir = string.IsNullOrEmpty(installDir) ? null : steamapps.GetDirectory("common", installDir)
+            };
+        }
+    }
+
+    private static IEnumerable<InstalledApplication> GetInstalledApplications(ValveDataSection? gameLibrarySection)
+    {
+        var appsSection = gameLibrarySection?["apps"];
+        if (appsSection is null) yield break;
+
+        foreach (var appProperty in appsSection.Properties)
+        {
+            if (!int.TryParse(appProperty.Key, out var appId)) continue;
+            yield return new InstalledApplication
+            {
+                AppId = appId,
+                FromGameLibrary = true
+            };
+        }
+    }
+
+    public IEnumerable<SteamClientModel> GetSteamLibraries()
+    {
+        var steamapps = GetSteamappsDirectory();
+        if (steamapps.NotExists()) yield break;
+
+        var libraryfolders = steamapps.GetFile("libraryfolders.vdf");
+        if (libraryfolders.NotExists()) yield break;
+
+        var valveDataDocument = ValveDataFileParser.Parse(libraryfolders);
+        if (!valveDataDocument.HasProperties) yield break;
+
+        foreach (var gameLibrarySection in valveDataDocument.PrimarySection)
+        {
+            var pathProperty = gameLibrarySection.Properties["path"];
+            if (string.IsNullOrEmpty(pathProperty?.Value)) continue;
+
+            var steamLibrary = FileSystemInfoExtensions.GetDirectory(pathProperty.Value);
+            if (steamLibrary.NotExists()) continue;
+
+            if (steamLibrary.HasSubdirectory("steamapps"))
+            {
+                var installedApplications = GetInstalledApplications(gameLibrarySection);
+                var isRootDirectory = IsRootDirectory &&
+                                      string.Equals(steamLibrary.FullName, WorkingDirectory.FullName, StringComparison.OrdinalIgnoreCase);
+                yield return new SteamClientModel(steamLibrary, isRootDirectory, installedApplications);
+            }
+            else
+            {
+                Console.WriteLine($"Steam Directory, but don't have steamapps subdirectory: {steamLibrary.FullName}");
+            }
+        }
     }
 }

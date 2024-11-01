@@ -1,34 +1,64 @@
-﻿namespace SProject.FileSystem;
+﻿using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
+using System.Text;
 
-/// <summary>
-///     Provides extension methods for working with <see cref="System.IO.FileInfo" /> instances.
-/// </summary>
+namespace SProject.FileSystem;
+
+[SuppressMessage("ReSharper", "UnusedType.Global")]
+[SuppressMessage("ReSharper", "UnusedMember.Global")]
 public static class FileInfoExtensions
 {
-    /// <summary>
-    ///     Reads all the text from a file.
-    /// </summary>
-    /// <param name="fileInfo">The <see cref="System.IO.FileInfo" /> instance representing the file to read.</param>
-    /// <param name="throwException">Specifies whether to throw an exception on error. If false, returns null on error.</param>
-    /// <returns>The content of the file as a string, or null if not found or <paramref name="throwException" /> is false.</returns>
-    /// <exception cref="ArgumentNullException">Thrown if <paramref name="fileInfo" /> is null or does not exist.</exception>
-    public static string? ReadAllText(this FileInfo? fileInfo, bool throwException = false)
+    private static readonly FileStreamOptions DefaultStreamOptions = new()
     {
-        if (fileInfo is null || !fileInfo.Exists)
-        {
-            if (throwException) throw new ArgumentNullException(nameof(fileInfo), "The parameter was null or did not exist in the file system.");
-            return null;
-        }
+        PreallocationSize = 0,
+        Access = FileAccess.Read,
+        Mode = FileMode.Open,
+        Options = FileOptions.Asynchronous,
+        BufferSize = 0,
+        Share = FileShare.Read
+    };
 
+    private static string ReadSmallText(FileStream fileStream, Encoding encoding)
+    {
+        var buffer = ArrayPool<byte>.Shared.Rent((int)fileStream.Length);
         try
         {
-            using var streamReader = fileInfo.OpenText();
-            return streamReader.ReadToEnd();
+            var bytesRead = fileStream.Read(buffer, 0, buffer.Length);
+            return encoding.GetString(buffer, 0, bytesRead);
         }
-        catch (Exception)
+        finally
         {
-            if (throwException) throw;
-            return null;
+            ArrayPool<byte>.Shared.Return(buffer);
         }
+    }
+
+    private static string ReadLargeText(FileStream fileStream, Encoding encoding)
+    {
+        var stringBuilder = new StringBuilder((int)fileStream.Length);
+        var buffer = ArrayPool<byte>.Shared.Rent(4096);
+        try
+        {
+            int bytesRead;
+            while ((bytesRead = fileStream.Read(buffer, 0, buffer.Length)) > 0)
+            {
+                var getString = encoding.GetString(buffer, 0, bytesRead);
+                stringBuilder.Append(getString);
+            }
+
+            return stringBuilder.ToString();
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
+        }
+    }
+
+    public static string ReadAllText(this FileInfo? fileInfo, Encoding? encoding = null)
+    {
+        if (!fileInfo.Exists()) throw new ArgumentException($"{nameof(fileInfo)} must not be null and must refer to an existing file.");
+
+        encoding ??= Encoding.UTF8;
+        using var fileStream = fileInfo.Open(DefaultStreamOptions);
+        return fileStream.Length <= 4096 ? ReadSmallText(fileStream, encoding) : ReadLargeText(fileStream, encoding);
     }
 }

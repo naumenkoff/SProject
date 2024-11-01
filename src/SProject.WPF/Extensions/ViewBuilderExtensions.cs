@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using SProject.WPF.Abstractions;
 using SProject.WPF.HostedServices;
+using SProject.WPF.Services;
 
 namespace SProject.WPF.Extensions;
 
@@ -11,34 +12,21 @@ namespace SProject.WPF.Extensions;
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
 public static class ViewBuilderExtensions
 {
-    public static IServiceCollection AddView<TMainView, TMainViewModel>(this IServiceCollection serviceCollection)
-        where TMainView : IMainViewOf<TMainViewModel>
-        where TMainViewModel : ObservableObject
+    public static IServiceCollection AddView<T, TVm>(this IServiceCollection serviceCollection)
+        where T : IMainViewOf<TVm> where TVm : ObservableObject
     {
-        return serviceCollection.AddHostedService<StartupService<TMainViewModel>>().RegisterView<TMainView>();
+        return serviceCollection.AddHostedService<StartupService<TVm>>().RegisterView<T>().AddSingleton<ShutdownService>();
     }
 
-    private static IServiceCollection RegisterView<TView>(this IServiceCollection serviceCollection)
+    private static IServiceCollection RegisterView<T>(this IServiceCollection serviceCollection)
     {
-        foreach (var type in typeof(TView).Assembly.GetTypes())
-        {
-            if (!type.IsClass)
-                continue;
-
-            if (type.IsAbstract)
-                continue;
-
-            var interfaces = type.GetInterfaces();
-            foreach (var inter in interfaces)
-            {
-                if (!inter.IsGenericType)
-                    continue;
-
-                var serviceType = inter.GetGenericTypeDefinition();
-                if (serviceType == typeof(IMainViewOf<>)) Inject(inter, type);
-                else if (serviceType == typeof(IViewOf<>)) Inject(inter, type);
-            }
-        }
+        foreach (var implementationType in typeof(T).Assembly.GetTypes().Where(type => type is { IsClass: true, IsAbstract: false }))
+        foreach (var serviceType in from @interface in implementationType.GetInterfaces()
+                                    where @interface.IsGenericType
+                                    let genericType = @interface.GetGenericTypeDefinition()
+                                    where genericType == typeof(IMainViewOf<>) || genericType == typeof(IViewOf<>)
+                                    select @interface)
+            Inject(serviceType, implementationType);
 
         return serviceCollection;
 

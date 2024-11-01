@@ -2,7 +2,7 @@
 
 namespace SProject.WPF.Abstractions;
 
-public interface IMainViewOf<TVm> : IViewOf<TVm> where TVm : ObservableObject
+public interface IMainViewOf<out TVm> : IViewOf<TVm> where TVm : ObservableObject
 {
     Task ShowAsync(CancellationToken cancellationToken = default);
 }
